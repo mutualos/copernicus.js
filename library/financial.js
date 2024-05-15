@@ -33,7 +33,7 @@ const financial = {
         var remainingMonths = maturityDate ? financial.remainingMonths(maturityDate) : termMonths;
         
         if (remainingMonths === null || remainingMonths <= 0) {
-            console.error('averagePrincipal: Invalid termMonths or maturityDate. Please provide a valid maturityDate or termMonths.', principal, annualRate, termMonths);
+            console.log('averagePrincipal: Invalid termMonths or maturityDate. Please provide a valid maturityDate or termMonths.', principal, annualRate, remainingMonths);
             return 0.00; // Exit the function if no valid term is provided
         }
         const amortization = isNaN(amortizationMonths) ? remainingMonths : Math.max(amortizationMonths, remainingMonths);
