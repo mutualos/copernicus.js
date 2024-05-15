@@ -10,7 +10,11 @@
     <h1>Welcome to Copernicus.js Framework</h1>
     <input type="file" id="csvPipe" accept=".csv" multiple>
     <button id="run">Run Processing</button>
-    <script src="core/functions.js"></script>
+
+    <div id="spinnerOverlay" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <script src="design/build.js"></script>
     <script src="core/loadLibraries.js"></script>
     <script src="organization/pipes.js"></script>
