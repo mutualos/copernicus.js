@@ -110,12 +110,14 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     });
 }
 
-function showSpinner() { // called by processLargePipeAsync
-    console.log("Loading...");
+function showSpinner() {
+    document.getElementById('spinnerOverlay').style.visibility = 'visible';
 }
 
-function hideSpinner() { // called by processLargePipeAsync
-    console.log("Finished.");
+function hideSpinner() {
+    setTimeout(() => {
+        document.getElementById('spinnerOverlay').style.visibility = 'hidden';
+    }, 500); // Adjust the delay as needed (e.g., 500ms)
 }
 
 function processLargePipeAsync(csvText, pipeFormula, pipeID, libraries) {
