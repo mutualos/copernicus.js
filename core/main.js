@@ -89,10 +89,11 @@ function evalFormula(data, formula, translations, libraries) {
     }
 }
 
-
 function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     const translatedHeaders = headers.map(header => translateHeader(pipeID, header));
     console.log('processFormula', headers, translatedHeaders);
+
+    const results = []; // Array to store results
 
     dataLines.forEach(line => {
         const values = line.split(',');
@@ -104,10 +105,51 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
         }, {});
 
         console.log('headers:', headers, 'dataObject:', dataObject);
-        
+
         const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);  // pipeID must match translations key
         console.log('result:', result, 'dataObject:', dataObject, 'pipeFormula:', pipeFormula);
+
+        // Assuming 'ID' is the key we want to display in column 1
+        const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
+        results.push({ ...dataObject, result, id }); // Store result with ID
     });
+
+    displayResults(results); // Call display function after processing
+}
+
+function displayResults(results) {
+    const tableContainer = document.getElementById('resultsTableContainer');
+    tableContainer.innerHTML = ''; // Clear previous results
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+
+    const headerRow = document.createElement('tr');
+    const columns = window.buildConfig.presentation.columns;
+
+    // Create table headers based on the presentation settings
+    columns.forEach(column => {
+        const th = document.createElement('th');
+        th.textContent = column.header;
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    results.forEach(result => {
+        const row = document.createElement('tr');
+        columns.forEach(column => {
+            const td = document.createElement('td');
+            td.textContent = result[column.key] || ''; // Handle missing keys
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    tableContainer.appendChild(table);
 }
 
 function showSpinner() {
