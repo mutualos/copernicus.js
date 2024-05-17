@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONP Example</title>
+</head>
+<body>
+    <h1>JSONP Example</h1>
+    <div id="content"></div>
+
+    <script>
+        function fetchJSONP(url, callbackName) {
+            const script = document.createElement('script');
+            script.src = `${url}?callback=${callbackName}`;
+            document.body.appendChild(script);
+        }
+
+        function handleResponse(data) {
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = `<p>${data.message}</p>`;
+        }
+
+        // Example URL of the JSONP endpoint
+        const url = 'http://your-server.com/your-endpoint';
+        
+        // Fetch JSONP data
+        fetchJSONP(url, 'handleResponse');
+    </script>
+</body>
+</html>
