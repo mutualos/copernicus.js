@@ -5,7 +5,7 @@ document.addEventListener('allLibrariesLoaded', function(e) {
     const headers = ["Portfolio", "Date_Opened", "Maturity_Date", "Branch_Number", "Class_Code", "Opened_by_Resp_Code", "Principal", "Amount_Last_Payment", "Rate_Over_Split", "Status_Code", "Risk_Rating", "Late_Charges"];
     const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0'];
 
-    const pipeFormula = "annualRate * averagePrincipal"; // Example formula
+    const pipeFormula = "(annualRate - trates:12)  * averagePrincipal"; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
     processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
 
@@ -37,10 +37,8 @@ function evalFormula(data, formula, translations, libraries) {
         let processedFormula = formula.replace(/\b(\w+(:\s*\w+)?)\b/g, (match) => {
             if (match.includes(':')) {
                 const [dictName, dictKey] = match.split(':').map(s => s.trim());
-                for (const library of libraries) {
-                    if (window[library][dictName] && window[library][dictName][dictKey] !== undefined) {
-                        return window[library][dictName][dictKey];
-                    }
+                if (libraries[dictName] && libraries[dictName][dictKey] !== undefined) {
+                    return libraries[dictName][dictKey];
                 }
                 throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
             }
@@ -51,32 +49,27 @@ function evalFormula(data, formula, translations, libraries) {
                 return translatedMatch; // Pass through numbers directly
             }
 
-            for (const library of libraries) {
-                const lib = window[library];
-                if (typeof lib[translatedMatch] === 'function') {
-                    const argsNames = getFunctionArgs(lib[translatedMatch]);
-                    const argsValues = argsNames.map(name => {
-                        if (data[name] === undefined) return 'null';
-                        const value = data[name];
-                        // Detect dates and enclose them in quotes
-                        if (!isNaN(Date.parse(value))) {
-                            return `'${value}'`;
-                        }
-                        return isNaN(value) ? `'${value}'` : value; // Quote non-numeric values
-                    }).join(', ');
-                    return `${library}['${translatedMatch}'](${argsValues})`;
-                } else if (lib.hasOwnProperty(translatedMatch)) {
-                    return lib[translatedMatch];
-                }
+            if (typeof libraries[translatedMatch] === 'function') {
+                const argsNames = getFunctionArgs(libraries[translatedMatch]);
+                const argsValues = argsNames.map(name => {
+                    if (data[name] === undefined) return 'null';
+                    const value = data[name];
+                    if (!isNaN(Date.parse(value))) {
+                        return `'${value}'`;
+                    }
+                    return isNaN(value) ? `'${value}'` : value;
+                }).join(', ');
+                return `libraries['${translatedMatch}'](${argsValues})`;
+            } else if (libraries.hasOwnProperty(translatedMatch)) {
+                return libraries[translatedMatch];
             }
 
             if (data.hasOwnProperty(translatedMatch)) {
                 const value = data[translatedMatch];
-                // Detect dates and enclose them in quotes
                 if (!isNaN(Date.parse(value))) {
                     return `'${value}'`;
                 }
-                return isNaN(value) ? `'${value}'` : value; // Quote non-numeric values
+                return isNaN(value) ? `'${value}'` : value;
             }
             return '0'; // Default for unrecognized matches
         });
@@ -88,6 +81,7 @@ function evalFormula(data, formula, translations, libraries) {
         return undefined;
     }
 }
+
 
 function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     const translatedHeaders = headers.map(header => translateHeader(pipeID, header));
@@ -109,13 +103,13 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
         const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);  // pipeID must match translations key
         console.log('result:', result, 'dataObject:', dataObject, 'pipeFormula:', pipeFormula);
 
-        // Assuming 'ID' is the key we want to display in column 1
         const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
         results.push({ ...dataObject, result, id }); // Store result with ID
     });
 
     displayResults(results); // Call display function after processing
 }
+
 
 function displayResults(results) {
     const tableContainer = document.getElementById('resultsTableContainer');
