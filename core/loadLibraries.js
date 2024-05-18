@@ -1,44 +1,49 @@
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.buildConfig && window.buildConfig.libraries) {
-        loadLibraries(window.buildConfig.libraries, (loadedLibraries) => {
-            const conflicts = detectConflicts(window.financial);
-            if (conflicts.length > 0) {
-                displayConflicts(conflicts);
-            } else {
-                document.dispatchEvent(new CustomEvent('allLibrariesLoaded', { detail: loadedLibraries }));
+function loadLibrary(library, callback) {
+    var script = document.createElement('script');
+    var libraryUrl;
+
+    // Check if the library is a URL
+    if (typeof library === 'string' && (library.startsWith('http://') || library.startsWith('https://'))) {
+        libraryUrl = library;
+    } else {
+        libraryUrl = `library/${library}.js`;
+    }
+
+    script.src = libraryUrl;
+
+    script.onload = function() {
+        console.log(`Library loaded successfully from ${libraryUrl}`);
+        // Combine the loaded library into the libraries object
+        Object.keys(window).forEach(key => {
+            if (!['libraries', 'buildConfig'].includes(key) && typeof window[key] === 'object' && !window.libraries[key]) {
+                Object.assign(window.libraries, window[key]);
+                delete window[key];
             }
         });
-    } else {
-        console.error('buildConfig or libraries not defined');
-    }
-});
+        callback(null);
+    };
 
-function loadLibrary(libraryName, callback) {
-    var script = document.createElement('script');
-    script.src = `library/${libraryName}.js`;
-    script.onload = function() {
-        console.log(`${libraryName} library loaded successfully.`);
-        callback(null, libraryName);
-    };
     script.onerror = function() {
-        console.error(`Failed to load library: ${libraryName}`);
-        callback(new Error(`Failed to load library: ${libraryName}`));
+        console.error(`Failed to load library from ${script.src}`);
+        callback(new Error(`Failed to load library from ${script.src}`));
     };
+
     document.head.appendChild(script);
 }
 
 function loadLibraries(libraries, finalCallback) {
     let loadedCount = 0;
     const totalLibraries = libraries.length;
-    const loadedLibraries = [];
 
-    libraries.forEach(libraryName => {
-        loadLibrary(libraryName, (error, name) => {
+    // Initialize the combined libraries object
+    window.libraries = {};
+
+    libraries.forEach(library => {
+        loadLibrary(library, (error) => {
             if (!error) {
-                loadedLibraries.push(name);
                 loadedCount++;
                 if (loadedCount === totalLibraries) {
-                    finalCallback(loadedLibraries);
+                    finalCallback(window.libraries);
                 }
             } else {
                 console.error(error);
@@ -47,16 +52,35 @@ function loadLibraries(libraries, finalCallback) {
     });
 }
 
-function detectConflicts(financial) {
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.buildConfig && window.buildConfig.libraries) {
+        loadLibraries(window.buildConfig.libraries, (combinedLibraries) => {
+            const conflicts = detectConflicts(combinedLibraries);
+            if (conflicts.length > 0) {
+                displayConflicts(conflicts);
+            } else {
+                document.dispatchEvent(new CustomEvent('allLibrariesLoaded', { detail: combinedLibraries }));
+            }
+        });
+    } else {
+        console.error('buildConfig or libraries not defined');
+    }
+});
+
+function detectConflicts(libraries) {
     const conflicts = [];
-    const keys = Object.keys(financial);
+    const keys = Object.keys(libraries);
+    const seenKeys = new Set();
+
     keys.forEach(key => {
-        if (typeof financial[key] === 'function' || typeof financial[key] === 'object') {
-            if (keys.filter(k => k === key).length > 1) {
+        if (typeof libraries[key] === 'function' || typeof libraries[key] === 'object') {
+            if (seenKeys.has(key)) {
                 conflicts.push(key);
             }
+            seenKeys.add(key);
         }
     });
+
     return conflicts;
 }
 
