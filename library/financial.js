@@ -58,15 +58,36 @@ const financial = {
         return averagePrincipal.toFixed(2);
     },
 
-    originationExpense: function(type) {
-        console.log(type, organization.loanTypeName);
-        return 1;
+    originationExpense: function(type, principal,  termMonths = null, maturityDate = null) {
+		if (typeof organization.loanTypeID === 'object') {
+			typeIDs = organization.loanTypeID;
+			let identifiedType = null;
+			for (let key in typeIDs) {
+				if (typeIDs[key].includes(type)) {
+					identifiedType = key;
+					break;
+				}
+			}
+			if (identifiedType !== null) {
+				const months = maturityDate ? financial.remainingMonths(maturityDate) : termMonths;
+				console.log('months', months);
+				const originationFactor = financial.originationFactor[identifiedType];
+				const principalCostMax = financial.principalCostMax[identifiedType];
+				const principalCostMin = principalCostMax / 10;
+				let expense = Math.max(principalCostMin, Math.min(principalCostMax, principal)) * originationFactor / Math.max(months, 60) / 12; //term nust be recouped in the first 60 months
+				return expense.toFixed(2);
+			} else {
+				console.error('type not found in organization.loanTypeID');
+			}
+		} else {
+			console.log('libary/organization.js is missing loanTypeID see financial.js library docs')
+		}
     },
 
     //copernicus.js attributes
     feeIncome: 1000,  
     //copernicus.js dictionaries
-    "OriginationCost": {
+    "originationFactor": {
         "Agriculture": 0.01,
         "Commercial":0.01, 
         "Commercial Real Estate": 0.015,
@@ -83,7 +104,7 @@ const financial = {
         "Tax Exempt Commercial": 0.01,
         "Tax Exempt Commercial Real Estate": 0.012
     },
-    "principalCostCaps": {
+    "principalCostMax": {
         "Agriculture": 1500000,
         "Commercial": 1500000,
         "Commercial Real Estate": 2500000,
