@@ -1,5 +1,5 @@
 const organization = {
-    "loanTypeName": {
+    "loanTypeID": {
         "Agriculture": [],
         "Commercial": ["31", "32", "33", "34"], 
         "Commercial Real Estate": ["4"],
