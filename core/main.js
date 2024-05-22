@@ -4,8 +4,9 @@ document.addEventListener('allLibrariesLoaded', function(e) {
 
     const headers = ["Portfolio", "Date_Opened", "Maturity_Date", "Branch_Number", "Class_Code", "Opened_by_Resp_Code", "Principal", "Amount_Last_Payment", "Rate_Over_Split", "Status_Code", "Risk_Rating", "Late_Charges"];
     const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0'];
-
-    const pipeFormula = "(annualRate - trates:12)  * averagePrincipal"; // Example formula
+    // Before let average = $averagePrincipal(|Principal|, |InterestRate|, |Term|, |Amortization|); let fees = |Fees| == 0 ? 0 : |Fees| / Math.min(|Term|, 60) * 12;
+    // ((|InterestRate| * .01 - $fundingRate(|Principal|, |InterestRate|, |Term|, |Amortization|, |Reprice|)) * average - Math.max({cost_principal_caps: |Type|} / 10, Math.min({cost_principal_caps: |Type|}, |Principal|)) * {loan_originationCost: |Type|} / Math.min(|Term|, 60) * 12 - ([servicing_cost_rate] * |Principal| / |Term| * 12) + fees) * (1 - [institution_tax_rate]) - $loanLossReserve(|Principal|, |InterestRate|, |LTV|, [default_recovery_rate], |guarantee|, {loan_default_rates: |Type|}, |Term|, |Amortization|)
+    const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate)"; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
     processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
 
@@ -42,7 +43,7 @@ function evalFormula(data, formula, translations, libraries) {
                 }
                 throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
             }
-            
+
             let translatedMatch = translations.hasOwnProperty(match) ? translations[match] : match;
 
             if (!isNaN(parseFloat(translatedMatch))) {
@@ -82,7 +83,6 @@ function evalFormula(data, formula, translations, libraries) {
     }
 }
 
-
 function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     const translatedHeaders = headers.map(header => translateHeader(pipeID, header));
     console.log('processFormula', headers, translatedHeaders);
@@ -109,7 +109,6 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
 
     displayResults(results); // Call display function after processing
 }
-
 
 function displayResults(results) {
     const tableContainer = document.getElementById('resultsTableContainer');
