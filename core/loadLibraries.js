@@ -15,7 +15,7 @@ function loadLibrary(library, callback) {
         console.log(`Library loaded successfully from ${libraryUrl}`);
         // Combine the loaded library into the libraries object
         Object.keys(window).forEach(key => {
-            if (!['libraries', 'buildConfig'].includes(key) && typeof window[key] === 'object' && !window.libraries[key]) {
+            if (!['libraries', 'buildConfig'].includes(key) && typeof window[key] === 'object') {
                 Object.assign(window.libraries, window[key]);
                 delete window[key];
             }
@@ -54,12 +54,12 @@ function loadLibraries(libraries, finalCallback) {
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.buildConfig && window.buildConfig.libraries) {
-        loadLibraries(window.buildConfig.libraries, (combinedLibraries) => {
-            const conflicts = detectConflicts(combinedLibraries);
+        loadLibraries(window.buildConfig.libraries, (loadedLibraries) => {
+            const conflicts = detectConflicts(loadedLibraries);
             if (conflicts.length > 0) {
                 displayConflicts(conflicts);
             } else {
-                document.dispatchEvent(new CustomEvent('allLibrariesLoaded', { detail: combinedLibraries }));
+                document.dispatchEvent(new CustomEvent('allLibrariesLoaded', { detail: loadedLibraries }));
             }
         });
     } else {
