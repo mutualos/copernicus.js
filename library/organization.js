@@ -1,4 +1,8 @@
 const organization = {
+    //attributes
+    taxRate: 0.27,
+    //dictionaries
+    //relationships
     "loanTypeID": {
         "Agriculture": [],
         "Commercial": ["31", "32", "33", "34"], 
@@ -15,6 +19,6 @@ const organization = {
         "Municipal": ["37"],
         "Tax Exempt Commercial": ["40"],
         "Tax Exempt Commercial Real Estate": ["42"]
-    }
+    },
 }
 window.organization = organization; // Make it globally accessible if not using modules
