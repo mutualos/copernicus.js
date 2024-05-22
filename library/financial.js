@@ -59,33 +59,42 @@ const financial = {
     },
 
     originationExpense: function(type, principal,  termMonths = null, maturityDate = null) {
-		if (typeof organization.loanTypeID === 'object') {
-			typeIDs = organization.loanTypeID;
-			let identifiedType = null;
-			for (let key in typeIDs) {
-				if (typeIDs[key].includes(type)) {
-					identifiedType = key;
-					break;
-				}
+	if (typeof organization.loanTypeID === 'object') {
+		typeIDs = organization.loanTypeID;
+		let identifiedType = null;
+		for (let key in typeIDs) {
+			if (typeIDs[key].includes(type)) {
+				identifiedType = key;
+				break;
 			}
-			if (identifiedType !== null) {
-				const months = maturityDate ? financial.remainingMonths(maturityDate) : termMonths;
-				console.log('months', months);
-				const originationFactor = financial.originationFactor[identifiedType];
-				const principalCostMax = financial.principalCostMax[identifiedType];
-				const principalCostMin = principalCostMax / 10;
-				let expense = Math.max(principalCostMin, Math.min(principalCostMax, principal)) * originationFactor / Math.max(months, 60) / 12; //term nust be recouped in the first 60 months
-				return expense.toFixed(2);
-			} else {
-				console.error('type not found in organization.loanTypeID');
-			}
-		} else {
-			console.log('libary/organization.js is missing loanTypeID see financial.js library docs')
 		}
+		if (identifiedType !== null) {
+			const months = maturityDate ? financial.remainingMonths(maturityDate) : termMonths;
+			const originationFactor = financial.originationFactor[identifiedType];
+			const principalCostMax = financial.principalCostMax[identifiedType];
+			const principalCostMin = principalCostMax / 10;
+			let expense = Math.max(principalCostMin, Math.min(principalCostMax, principal)) * originationFactor / Math.max(months, 60) * 12; //term nust be recouped in the first 60 months
+			return expense.toFixed(2);
+		} else {
+			console.error('type not found in organization.loanTypeID');
+		}
+	} else {
+		console.log('libary/organization.js is missing loanTypeID see financial.js library docs')
+	}
+    },
+
+    servicingExpense: function(principal,  termMonths = null, maturityDate = null) {
+	if (financial.loanServicingFactor) {
+	    const months = maturityDate ? financial.remainingMonths(maturityDate) : termMonths;
+	    let expense = principal * financial.loanServicingFactor / months * 12; //term nust be recouped in the first 60 months
+	    return expense.toFixed(2);
+	} else {
+		console.log('libary/financial.js is missing loanServicingFactor see financial.js library docs')
+	}
     },
 
     //copernicus.js attributes
-    feeIncome: 1000,  
+    loanServicingFactor: .0025,  
     //copernicus.js dictionaries
     "originationFactor": {
         "Agriculture": 0.01,
