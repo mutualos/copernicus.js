@@ -6,7 +6,7 @@ document.addEventListener('allLibrariesLoaded', function(e) {
     const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0'];
     // Before let average = $averagePrincipal(|Principal|, |InterestRate|, |Term|, |Amortization|); let fees = |Fees| == 0 ? 0 : |Fees| / Math.min(|Term|, 60) * 12;
     // ((|InterestRate| * .01 - $fundingRate(|Principal|, |InterestRate|, |Term|, |Amortization|, |Reprice|)) * average - Math.max({cost_principal_caps: |Type|} / 10, Math.min({cost_principal_caps: |Type|}, |Principal|)) * {loan_originationCost: |Type|} / Math.min(|Term|, 60) * 12 - ([servicing_cost_rate] * |Principal| / |Term| * 12) + fees) * (1 - [institution_tax_rate]) - $loanLossReserve(|Principal|, |InterestRate|, |LTV|, [default_recovery_rate], |guarantee|, {loan_default_rates: |Type|}, |Term|, |Amortization|)
-    const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate)"; // Example formula
+    const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve"; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
     processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
 
@@ -158,18 +158,20 @@ function hideSpinner() {
 function processLargePipeAsync(csvText, pipeFormula, pipeID, libraries) {
     showSpinner();
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            try {
-                const dataLines = csvText.split('\n').filter(line => line.trim());
-                const headers = dataLines[0].split(',').map(header => header.trim());
-                processFormula(dataLines.slice(1), headers, pipeFormula, pipeID, libraries);
-                hideSpinner();
-                resolve('Data processed successfully');
-            } catch (error) {
-                hideSpinner();
-                reject(error);
-            }
-        }, 0);
+        try {
+            const dataLines = csvText.split('\n').filter(line => line.trim());
+            const headers = dataLines[0].split(',').map(header => header.trim());
+            processFormula(dataLines.slice(1), headers, pipeFormula, pipeID, libraries);
+            resolve('Data processed successfully');
+        } catch (error) {
+            reject(error);
+        }
+    }).then(result => {
+        hideSpinner();
+        return result;
+    }).catch(error => {
+        hideSpinner();
+        throw error;
     });
 }
 
