@@ -2,6 +2,7 @@ const organization = {
     //attributes
     taxRate: 0.27,
     //dictionaries
+    "loanRiskFactors": {"0":1,"1":0,"2":0.5,"3":1,"3W":2,"4":10,"5":100,"NULL":1},
     //relationships
     "loanTypeID": {
         "Agriculture": [],
