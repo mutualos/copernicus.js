@@ -135,7 +135,27 @@ function displayResults(results) {
         const row = document.createElement('tr');
         columns.forEach(column => {
             const td = document.createElement('td');
-            td.textContent = result[column.key] || ''; // Handle missing keys
+            let value = result[column.key] || '';
+
+            // Format the value based on the type
+            switch (column.type) {
+                case 'integer':
+                    value = parseInt(value, 10);
+                    break;
+                case 'float':
+                    value = parseFloat(value).toFixed(2);
+                    break;
+                case 'currency':
+                    value = `$${parseFloat(value).toFixed(2)}`;
+                    break;
+                case 'percentage':
+                    value = `${parseFloat(value * 100).toFixed(2)}%`;
+                    break;
+                default:
+                    value = value;
+            }
+
+            td.textContent = value;
             row.appendChild(td);
         });
         tbody.appendChild(row);
