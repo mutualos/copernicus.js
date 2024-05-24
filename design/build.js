@@ -8,5 +8,7 @@ window.buildConfig = {
             { header: 'Principal', key: 'principal', type: 'currency' }, // Display principal in column 2
             { header: 'Result', key: 'result', type: 'float' } // Display result in column 3
         ]
-    }
+    },
+    primary_key: 'ID',
+    sort: { key: 'result', order: 'desc' }
 };
