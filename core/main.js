@@ -1,9 +1,9 @@
 document.addEventListener('allLibrariesLoaded', function(e) {
     const loadedLibraries = e.detail;
     console.log('All libraries loaded:', loadedLibraries);
-
+    // Testing-demo data 
     const headers = ["Portfolio", "Date_Opened", "Maturity_Date", "Branch_Number", "Class_Code", "Opened_by_Resp_Code", "Principal", "Amount_Last_Payment", "Rate_Over_Split", "Status_Code", "Risk_Rating", "Late_Charges"];
-    const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0'];
+    const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,100000.00,1466.67,0.0625,0,3,0'];
     // Before let average = $averagePrincipal(|Principal|, |InterestRate|, |Term|, |Amortization|); let fees = |Fees| == 0 ? 0 : |Fees| / Math.min(|Term|, 60) * 12;
     // ((|InterestRate| * .01 - $fundingRate(|Principal|, |InterestRate|, |Term|, |Amortization|, |Reprice|)) * average - Math.max({cost_principal_caps: |Type|} / 10, Math.min({cost_principal_caps: |Type|}, |Principal|)) * {loan_originationCost: |Type|} / Math.min(|Term|, 60) * 12 - ([servicing_cost_rate] * |Principal| / |Term| * 12) + fees) * (1 - [institution_tax_rate]) - $loanLossReserve(|Principal|, |InterestRate|, |LTV|, [default_recovery_rate], |guarantee|, {loan_default_rates: |Type|}, |Term|, |Amortization|)
     const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve"; // Example formula
@@ -120,6 +120,8 @@ function displayResults(results) {
 
     const headerRow = document.createElement('tr');
     const columns = window.buildConfig.presentation.columns;
+    const primaryKey = window.buildConfig.primary_key;
+    const sortConfig = window.buildConfig.sort;
 
     // Create table headers based on the presentation settings
     columns.forEach(column => {
@@ -131,7 +133,43 @@ function displayResults(results) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
+    // Combine rows with the same primary key
+    const combinedResults = {};
+
     results.forEach(result => {
+        const primaryKeyValue = result[primaryKey];
+        if (!combinedResults[primaryKeyValue]) {
+            combinedResults[primaryKeyValue] = { ...result, count: 1 };
+        } else {
+            columns.forEach(column => {
+                if (column.key !== primaryKey && result[column.key]) {
+                    const currentVal = combinedResults[primaryKeyValue][column.key];
+                    const newVal = result[column.key];
+                    if (!isNaN(parseFloat(newVal)) && !isNaN(parseFloat(currentVal))) {
+                        combinedResults[primaryKeyValue][column.key] = parseFloat(currentVal) + parseFloat(newVal);
+                    } else {
+                        combinedResults[primaryKeyValue][column.key] = `${currentVal}, ${newVal}`;
+                    }
+                }
+            });
+            combinedResults[primaryKeyValue].count += 1;
+        }
+    });
+
+    // Convert combined results back to an array
+    const combinedResultsArray = Object.values(combinedResults);
+
+    // Sort the combined results
+    combinedResultsArray.sort((a, b) => {
+        if (sortConfig.order === 'asc') {
+            return a[sortConfig.key] - b[sortConfig.key];
+        } else {
+            return b[sortConfig.key] - a[sortConfig.key];
+        }
+    });
+
+    // Display the sorted results
+    combinedResultsArray.forEach(result => {
         const row = document.createElement('tr');
         columns.forEach(column => {
             const td = document.createElement('td');
@@ -153,6 +191,11 @@ function displayResults(results) {
                     break;
                 default:
                     value = value;
+            }
+
+            // Add count to primary key value if there are duplicates
+            if (column.key === primaryKey && result.count > 1) {
+                value += ` (${result.count})`;
             }
 
             td.textContent = value;
