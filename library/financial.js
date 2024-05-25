@@ -9,8 +9,8 @@ const financial = {
         const today = new Date();
         const maturity = new Date(maturityDate);
         const months = (maturity.getFullYear() - today.getFullYear()) * 12 + maturity.getMonth() - today.getMonth();
-        console.log('maturityDate, months', maturityDate, months);
-        return months > 0 ? months : 0;
+        //console.log('maturityDate, months', maturityDate, months);
+        return months > 0 ? months : 1;
     },
 
     calculateLoanPayment: function(principal, annualRate, amortizationMonths) {
