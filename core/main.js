@@ -3,10 +3,12 @@ document.addEventListener('allLibrariesLoaded', function(e) {
     console.log('All libraries loaded:', loadedLibraries);
     // Testing-demo data 
     const headers = ["Portfolio", "Date_Opened", "Maturity_Date", "Branch_Number", "Class_Code", "Opened_by_Resp_Code", "Principal", "Amount_Last_Payment", "Rate_Over_Split", "Status_Code", "Risk_Rating", "Late_Charges"];
-    const dataLines = ['123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0', '123456790,2017-06-15,2037-07-01,1,4,92,100000.00,1466.67,0.0625,0,3,0'];
-    // Before let average = $averagePrincipal(|Principal|, |InterestRate|, |Term|, |Amortization|); let fees = |Fees| == 0 ? 0 : |Fees| / Math.min(|Term|, 60) * 12;
-    // ((|InterestRate| * .01 - $fundingRate(|Principal|, |InterestRate|, |Term|, |Amortization|, |Reprice|)) * average - Math.max({cost_principal_caps: |Type|} / 10, Math.min({cost_principal_caps: |Type|}, |Principal|)) * {loan_originationCost: |Type|} / Math.min(|Term|, 60) * 12 - ([servicing_cost_rate] * |Principal| / |Term| * 12) + fees) * (1 - [institution_tax_rate]) - $loanLossReserve(|Principal|, |InterestRate|, |LTV|, [default_recovery_rate], |guarantee|, {loan_default_rates: |Type|}, |Term|, |Amortization|)
-    const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve"; // Example formula
+    const dataLines = [
+        '123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0',
+        '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0',
+        '123456790,2017-06-15,2037-07-01,1,4,92,100000.00,1466.67,0.0625,0,3,0'
+    ];
+    const pipeFormula = '((annualRate - trates:remainingMonths)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve'; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
     processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
 
@@ -18,7 +20,7 @@ document.addEventListener('allLibrariesLoaded', function(e) {
         }
         const processingPromises = [];
         Array.from(files).forEach(file => {
-            const pipeFormula = getFormula(file.name);
+            const pipeFormula =  getFormulaByComponent(file.name);
             if (pipeFormula) {
                 processingPromises.push(readFileAsync(file, pipeFormula, pipeID, loadedLibraries));
             } else {
@@ -28,30 +30,47 @@ document.addEventListener('allLibrariesLoaded', function(e) {
     });
 });
 
+function getFormulaByComponent(fileName) {
+    const components = window.buildConfig.components;
+    for (const component of components) {
+        for (const pipeID of component.pipeIDs) {
+            if (fileName.includes(pipeID)) {
+                return component.formula;
+            }
+        }
+    }
+    return null;
+}
+
 function getFunctionArgs(func) {
     const args = func.toString().match(/(?:\(|\s)([^)]*)(?:\)|=>)/)[1];
     return args.split(',').map(arg => arg.trim().split('=')[0].trim());
 }
 
 function evalFormula(data, formula, translations, libraries) {
+    //console.log('Libraries object:', libraries);
+
     try {
-        let processedFormula = formula.replace(/\b(\w+(:\s*\w+)?)\b/g, (match) => {
-            if (match.includes(':')) {
-                const [dictName, dictKey] = match.split(':').map(s => s.trim());
-                if (libraries[dictName] && libraries[dictName][dictKey] !== undefined) {
-                    return libraries[dictName][dictKey];
+        // Step 1: Replace attributes
+        let processedFormula = formula.replace(/\b(\w+)\b/g, (match) => {
+            if (libraries.hasOwnProperty(match) && typeof libraries[match] !== 'function' && typeof libraries[match] !== 'object') {
+                return libraries[match];
+            } else if (data.hasOwnProperty(match)) {
+                const value = data[match];
+                if (!isNaN(Date.parse(value))) {
+                    return `'${value}'`;
                 }
-                throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
+                return isNaN(value) ? `'${value}'` : value;
             }
+            return match; // Return unchanged if not an attribute
+        });
 
-            let translatedMatch = translations.hasOwnProperty(match) ? translations[match] : match;
+        console.log('After attributes replacement:', processedFormula); // Debugging output
 
-            if (!isNaN(parseFloat(translatedMatch))) {
-                return translatedMatch; // Pass through numbers directly
-            }
-
-            if (typeof libraries[translatedMatch] === 'function') {
-                const argsNames = getFunctionArgs(libraries[translatedMatch]);
+        // Step 2: Replace functions
+        processedFormula = processedFormula.replace(/\b(\w+)\b/g, (match) => {
+            if (typeof libraries[match] === 'function') {
+                const argsNames = getFunctionArgs(libraries[match]);
                 const argsValues = argsNames.map(name => {
                     if (data[name] === undefined) return 'null';
                     const value = data[name];
@@ -60,23 +79,29 @@ function evalFormula(data, formula, translations, libraries) {
                     }
                     return isNaN(value) ? `'${value}'` : value;
                 }).join(', ');
-                return `libraries['${translatedMatch}'](${argsValues})`;
-            } else if (libraries.hasOwnProperty(translatedMatch)) {
-                return libraries[translatedMatch];
-            }
 
-            if (data.hasOwnProperty(translatedMatch)) {
-                const value = data[translatedMatch];
-                if (!isNaN(Date.parse(value))) {
-                    return `'${value}'`;
-                }
-                return isNaN(value) ? `'${value}'` : value;
+                const functionCall = `libraries.${match}(${argsValues})`;
+                //console.log('Function call:', functionCall);
+                const functionResult = eval(functionCall);
+                //console.log('Function result:', functionResult);
+                return functionResult;
             }
-            return '0'; // Default for unrecognized matches
+            return match; // Return unchanged if not a function
         });
 
-        console.log(processedFormula);  // Debugging output
-        return eval(processedFormula); // Evaluate the processed formula string
+        console.log('After functions replacement:', processedFormula); // Debugging output
+
+        // Step 3: Process dictionary lookups
+        processedFormula = processedFormula.replace(/\b(\w+:\s*\w+)\b/g, (match) => {
+            const [dictName, dictKey] = match.split(':').map(s => s.trim());
+            if (libraries[dictName] && libraries[dictName][dictKey] !== undefined) {
+                return libraries[dictName][dictKey];
+            }
+            throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
+        });
+
+        console.log('Final processed formula:', processedFormula); // Debugging output
+        return eval(processedFormula); // Evaluate the final formula string
     } catch (error) {
         console.error('Error evaluating formula:', error);
         return undefined;
@@ -85,21 +110,15 @@ function evalFormula(data, formula, translations, libraries) {
 
 function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     const translatedHeaders = headers.map(header => translateHeader(pipeID, header));
-    console.log('processFormula', headers, translatedHeaders);
-
     const results = []; // Array to store results
 
     dataLines.forEach(line => {
         const values = line.split(',');
-        console.log('values', values);
-
         const dataObject = translatedHeaders.reduce((obj, header, index) => {
             obj[header] = values[index] ? values[index].trim() : null; // Assign values to translated headers
             return obj;
         }, {});
-
-        console.log('headers:', headers, 'dataObject:', dataObject);
-
+        
         const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);  // pipeID must match translations key
         console.log('result:', result, 'dataObject:', dataObject, 'pipeFormula:', pipeFormula);
 
@@ -120,8 +139,8 @@ function displayResults(results) {
 
     const headerRow = document.createElement('tr');
     const columns = window.buildConfig.presentation.columns;
-    const primaryKey = window.buildConfig.primary_key;
-    const sortConfig = window.buildConfig.sort;
+    const primaryKey = window.buildConfig.presentation.primary_key;
+    const sortConfig = window.buildConfig.presentation.sort;
 
     // Create table headers based on the presentation settings
     columns.forEach(column => {
@@ -252,13 +271,8 @@ function readFileAsync(file, pipeFormula, pipeID, libraries) {
     });
 }
 
-function getFormula(fileName) {
-    return 'annualRate * averagePrincipal';
-}
-
 function translateHeader(pipeID, csvHeader) {
     const pipeTranslations = translations[pipeID];
-    console.log(pipeTranslations);
     if (pipeTranslations && pipeTranslations[csvHeader]) {
         return pipeTranslations[csvHeader];
     }
