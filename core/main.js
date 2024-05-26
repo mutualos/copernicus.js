@@ -1,3 +1,5 @@
+//const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve"; // Example formula
+
 document.addEventListener('allLibrariesLoaded', function(e) {
     const loadedLibraries = e.detail;
     console.log('All libraries loaded:', loadedLibraries);
@@ -10,7 +12,8 @@ document.addEventListener('allLibrariesLoaded', function(e) {
     ];
     const pipeFormula = '((annualRate - trates:remainingMonths)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve'; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
-    processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
+    allResults = processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
+    displayResults(allResults);
 
     document.getElementById('run').addEventListener('click', () => {
         const files = document.getElementById('csvPipe').files;
@@ -18,24 +21,44 @@ document.addEventListener('allLibrariesLoaded', function(e) {
             console.log("No files selected.");
             return;
         }
+    
         const processingPromises = [];
+        let allResults = [];
+    
         Array.from(files).forEach(file => {
-            const pipeFormula =  getFormulaByComponent(file.name);
-            if (pipeFormula) {
-                processingPromises.push(readFileAsync(file, pipeFormula, pipeID, loadedLibraries));
+            const result = getFormulaAndPipeIDByComponent(file.name);
+            if (result) {
+                const { formula, pipeID } = result;
+                console.log('Processing:', pipeID);
+                processingPromises.push(
+                    readFileAsync(file, formula, pipeID, loadedLibraries)
+                    .then(fileResults => {
+                        allResults = allResults.concat(fileResults);
+                    })
+                );
             } else {
                 console.error(`No matching formula for file ${file.name}. Skipping.`);
             }
         });
+    
+        Promise.all(processingPromises)
+            .then(() => {
+                console.log('All files processed successfully');
+                displayResults(allResults);
+            })
+            .catch(error => {
+                console.error('Error processing files:', error);
+            });
     });
+    
 });
 
-function getFormulaByComponent(fileName) {
+function getFormulaAndPipeIDByComponent(fileName) {
     const components = window.buildConfig.components;
     for (const component of components) {
         for (const pipeID of component.pipeIDs) {
             if (fileName.includes(pipeID)) {
-                return component.formula;
+                return { formula: component.formula, pipeID: component.id };
             }
         }
     }
@@ -112,21 +135,28 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
     const translatedHeaders = headers.map(header => translateHeader(pipeID, header));
     const results = []; // Array to store results
 
+    const columns = window.buildConfig.presentation.columns.map(col => col.key);
+
     dataLines.forEach(line => {
         const values = line.split(',');
         const dataObject = translatedHeaders.reduce((obj, header, index) => {
             obj[header] = values[index] ? values[index].trim() : null; // Assign values to translated headers
             return obj;
         }, {});
-        
-        const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);  // pipeID must match translations key
-        console.log('result:', result, 'dataObject:', dataObject, 'pipeFormula:', pipeFormula);
-
+        const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);
         const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
-        results.push({ ...dataObject, result, id }); // Store result with ID
+
+        const limitedDataObject = { id };
+        columns.forEach(column => {
+            if (column in dataObject) {
+                limitedDataObject[column] = dataObject[column];
+            }
+        });
+
+        results.push({ ...limitedDataObject, result }); // Store result with ID and required columns
     });
 
-    displayResults(results); // Call display function after processing
+    return results; // Return results to be resolved
 }
 
 function displayResults(results) {
@@ -161,13 +191,18 @@ function displayResults(results) {
             combinedResults[primaryKeyValue] = { ...result, count: 1 };
         } else {
             columns.forEach(column => {
-                if (column.key !== primaryKey && result[column.key]) {
+                if (column.key !== primaryKey) {
                     const currentVal = combinedResults[primaryKeyValue][column.key];
                     const newVal = result[column.key];
+
                     if (!isNaN(parseFloat(newVal)) && !isNaN(parseFloat(currentVal))) {
                         combinedResults[primaryKeyValue][column.key] = parseFloat(currentVal) + parseFloat(newVal);
-                    } else {
-                        combinedResults[primaryKeyValue][column.key] = `${currentVal}, ${newVal}`;
+                    } else if (!currentVal) {
+                        combinedResults[primaryKeyValue][column.key] = newVal;
+                    } else if (currentVal.includes("undefined") || currentVal.includes("NaN")) {
+                        combinedResults[primaryKeyValue][column.key] = parseFloat(newVal) || 0;
+                    } else if (!newVal || isNaN(newVal)) {
+                        combinedResults[primaryKeyValue][column.key] = currentVal;
                     }
                 }
             });
@@ -192,24 +227,43 @@ function displayResults(results) {
         const row = document.createElement('tr');
         columns.forEach(column => {
             const td = document.createElement('td');
-            let value = result[column.key] || '';
+            let value = result[column.key];
 
             // Format the value based on the type
-            switch (column.type) {
-                case 'integer':
-                    value = parseInt(value, 10);
-                    break;
-                case 'float':
-                    value = parseFloat(value).toFixed(2);
-                    break;
-                case 'currency':
-                    value = `$${parseFloat(value).toFixed(2)}`;
-                    break;
-                case 'percentage':
-                    value = `${parseFloat(value * 100).toFixed(2)}%`;
-                    break;
-                default:
-                    value = value;
+            if (value === undefined || value === null || value === '') {
+                value = '';
+            } else {
+                switch (column.type) {
+                    case 'integer':
+                        value = parseInt(value, 10);
+                        if (isNaN(value)) value = 0;
+                        break;
+                    case 'float':
+                        value = parseFloat(value).toFixed(2);
+                        if (isNaN(value)) value = '0.00';
+                        break;
+                    case 'currency':
+                        value = parseFloat(value).toFixed(2);
+                        if (isNaN(value)) {
+                            value = '$0.00';
+                        } else {
+                            value = `$${value}`;
+                        }
+                        break;
+                    case 'percentage':
+                        value = parseFloat(value * 100).toFixed(2);
+                        if (isNaN(value)) {
+                            value = '0.00%';
+                        } else {
+                            value = `${value}%`;
+                        }
+                        break;
+                    case 'upper':
+                        value = value.toUpperCase();
+                        break;
+                    default:
+                        value = value;
+                }
             }
 
             // Add count to primary key value if there are duplicates
@@ -227,6 +281,7 @@ function displayResults(results) {
     tableContainer.appendChild(table);
 }
 
+
 function showSpinner() {
     document.getElementById('spinnerOverlay').style.visibility = 'visible';
 }
@@ -243,8 +298,8 @@ function processLargePipeAsync(csvText, pipeFormula, pipeID, libraries) {
         try {
             const dataLines = csvText.split('\n').filter(line => line.trim());
             const headers = dataLines[0].split(',').map(header => header.trim());
-            processFormula(dataLines.slice(1), headers, pipeFormula, pipeID, libraries);
-            resolve('Data processed successfully');
+            const results = processFormula(dataLines.slice(1), headers, pipeFormula, pipeID, libraries);
+            resolve(results);
         } catch (error) {
             reject(error);
         }
@@ -263,7 +318,7 @@ function readFileAsync(file, pipeFormula, pipeID, libraries) {
         reader.onload = function(e) {
             const text = e.target.result;
             processLargePipeAsync(text, pipeFormula, pipeID, libraries)
-                .then(resolve)
+                .then(result => resolve(result))
                 .catch(reject);
         };
         reader.onerror = reject;
