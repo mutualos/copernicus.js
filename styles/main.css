@@ -55,18 +55,50 @@ button:hover {
     100% { transform: rotate(360deg); }
 }
 
- /* Table styles */
- table {
+/* Table container */
+.table-container {
+  width: 100%;
+  overflow-y: auto; /* Enable vertical scrolling */
+  height: calc(100vh - 40px); /* Set the height to adjust based on the screen size, minus some padding/margin */
+  border: 1px solid #ddd; /* Optional: Add a border to the container */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow for a modern touch */
+  border-radius: 5px; /* Optional: Add rounded corners */
+  margin-top: 20px; /* Add top margin */
+  margin-bottom: 20px; /* Add bottom margin */
+}
+
+/* Table styles */
+table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  font-family: Arial, sans-serif; /* Adding a modern font */
 }
 
 th, td {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 12px; /* Increased padding for better readability */
+  text-align: left; /* Left-align text for a cleaner look */
 }
 
 th {
-  background-color: #f2f2f2;
+  background-color: #001f3f; /* Navy blue color for header */
+  color: white; /* White text color for better contrast */
+  text-transform: uppercase; /* Uppercase text for headers */
+  letter-spacing: 0.05em; /* Slightly increased letter spacing */
+  position: sticky; /* Make the header row sticky */
+  top: 0; /* Position it at the top */
+  z-index: 2; /* Ensure it stays above the table rows */
+}
+
+tr:nth-child(even) {
+  background-color: #f0f8ff; /* Very light variant of navy blue */
+}
+
+tr:hover {
+  background-color: #d1ecf1; /* Light blue hover effect for better user interaction */
+}
+
+/* Additional styling for a modern look */
+td {
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
 }
