@@ -1,104 +1,149 @@
+/* General Styles */
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-h1 {
-  color: #0056b3;
-}
-
-input[type="file"] {
-  margin: 10px 0;
-  display: block;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f4f8;
 }
 
 button {
-  background-color: #007bff;
+  background-color: #28a745; /* Complementary color to the logo */
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px; /* Smaller padding for smaller buttons */
+  margin: 10px;
   cursor: pointer;
   border-radius: 5px;
+  font-size: 14px; /* Smaller font size */
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #218838;
 }
 
-.spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    visibility: hidden;
+.button-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
 }
 
-.spinner {
-    border: 16px solid #f3f3f3;
-    border-top: 16px solid #3498db;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Table container */
+/* Table Container */
 .table-container {
-  width: 100%;
-  overflow-y: auto; /* Enable vertical scrolling */
-  height: calc(100vh - 40px); /* Set the height to adjust based on the screen size, minus some padding/margin */
-  border: 1px solid #ddd; /* Optional: Add a border to the container */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow for a modern touch */
-  border-radius: 5px; /* Optional: Add rounded corners */
-  margin-top: 20px; /* Add top margin */
-  margin-bottom: 20px; /* Add bottom margin */
+  width: calc(100% - 40px); /* Adjusted for left and right margins */
+  overflow-y: auto;
+  height: calc(100vh - 100px); /* Adjusted to account for the footer and margins */
+  border: 1px solid #ddd;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  margin: 20px; /* Margin for top, bottom, left, and right */
+  background-color: white;
 }
 
-/* Table styles */
 table {
   width: 100%;
   border-collapse: collapse;
-  font-family: Arial, sans-serif; /* Adding a modern font */
+  font-family: Arial, sans-serif;
 }
 
 th, td {
   border: 1px solid #ddd;
-  padding: 12px; /* Increased padding for better readability */
-  text-align: left; /* Left-align text for a cleaner look */
+  padding: 12px;
+  text-align: left;
 }
 
 th {
-  background-color: #001f3f; /* Navy blue color for header */
-  color: white; /* White text color for better contrast */
-  text-transform: uppercase; /* Uppercase text for headers */
-  letter-spacing: 0.05em; /* Slightly increased letter spacing */
-  position: sticky; /* Make the header row sticky */
-  top: 0; /* Position it at the top */
-  z-index: 2; /* Ensure it stays above the table rows */
+  background-color: #001f3f;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 tr:nth-child(even) {
-  background-color: #f0f8ff; /* Very light variant of navy blue */
+  background-color: #f0f8ff;
 }
 
 tr:hover {
-  background-color: #d1ecf1; /* Light blue hover effect for better user interaction */
+  background-color: #d1ecf1;
 }
 
-/* Additional styling for a modern look */
 td {
-  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  transition: background-color 0.3s;
+}
+
+/* Spinner Overlay */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensuring the spinner overlay is on top */
+  visibility: hidden;
+}
+
+.spinner {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #007bff;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* Fixed Footer */
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #001f3f;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.fixed-footer input[type="file"] {
+  color: white;
+  background-color: #007bff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.fixed-footer input[type="file"]::-webkit-file-upload-button {
+  color: white;
+  background-color: #007bff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.fixed-footer button {
+  background-color: #28a745; /* Changed background color for more contrast */
+}
+
+.fixed-footer button:hover {
+  background-color: #218838;
 }
