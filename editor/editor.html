@@ -8,21 +8,27 @@
     <script src="../library/organization.js"></script>
     <script src="../library/api.js"></script>
     <script src="../library/financial.js"></script>
+    <script src="../organization/pipes.js"></script>
 </head>
 <body>
-    <div id="sidebar">
+    <div id="copernicus_sidebar">
         <div class="suggestion attribute" id="attributes">
             <h3>Attributes</h3>
         </div>
         <div class="suggestion function" id="functions">
             <h3>Functions</h3>
         </div>
-        <div class="suggestion dictionaries" id="dictionaries">
+        <div class="suggestion dictionary" id="dictionaries">
             <h3>Dictionaries</h3>
         </div>
     </div>
     <div id="editor-container">
         <div contenteditable="true" id="editor" spellcheck="false"></div>
+    </div>
+    <div id="pipe_sidebar">
+        <div class="suggestion pipe" id="pipes">
+            <h3>Pipes</h3>
+        </div>
     </div>
     <script src="extractLibraries.js"></script>
     <script src="editor.js"></script>
