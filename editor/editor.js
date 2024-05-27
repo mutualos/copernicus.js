@@ -23,7 +23,9 @@ function highlightSyntax(text) {
                 .replace(/(\bfunction\b|\bvar\b|\blet\b|\bconst\b|\bif\b|\belse\b|\bfor\b|\bwhile\b)/g, '<span class="keyword">$1</span>')
                 .replace(new RegExp(`\\b(${copernicusFunctions.join('|')})\\b`, 'g'), '<span class="function">$1</span>')
                 .replace(new RegExp(`\\b(${copernicusAttributes.join('|')})\\b`, 'g'), '<span class="attribute">$1</span>')
-                .replace(new RegExp(`\\b(${copernicusDictionaries.join('|')})\\s*:\\s*(\\d+|".*?")`, 'g'), '<span class="dictionary">$1</span>:<span class="value">$2</span>');
+                .replace(new RegExp(`\\b(${copernicusDictionaries.join('|')})\\b`, 'g'), '<span class="dictionaries">$1</span>')
+                .replace(new RegExp(`\\b(${copernicusDictionaries.join('|')})\\s*:\\s*(\\d+|".*?")`, 'g'), '<span class="dictionaries">$1</span>:<span class="value">$2</span>')
+                .replace(new RegExp(`\\b(${pipeItems.map(item => item.items).flat().join('|')})\\b`, 'g'), '<span class="pipe">$1</span>'); // Highlight pipe items
         }
     });
 
@@ -59,18 +61,20 @@ function placeCaretAtEnd(el) {
 
 function updateSuggestions(text) {
     const words = text.split(/\s+/);
-    const lastWord = words[words.length - 1];
-    
+    const lastWord = words[words.length - 1].toLowerCase(); // Convert to lowercase for case-insensitive match
+
+    // Update suggestions for attributes, functions, dictionaries, and pipes
     updateSuggestionBox('attributes', copernicusAttributes, lastWord);
     updateSuggestionBox('functions', copernicusFunctions, lastWord);
     updateSuggestionBox('dictionaries', copernicusDictionaries, lastWord);
+    updatePipeSuggestionBox(pipeItems, lastWord);
 }
 
 function updateSuggestionBox(id, suggestions, filter) {
     const container = document.getElementById(id);
     container.innerHTML = `<h3>${id.charAt(0).toUpperCase() + id.slice(1)}</h3>`;
-    
-    suggestions.filter(word => word.startsWith(filter)).forEach(suggestion => {
+
+    suggestions.filter(word => word.toLowerCase().includes(filter)).forEach(suggestion => {
         const item = document.createElement('div');
         item.className = `suggestion-item ${id}`;
         item.innerText = suggestion;
@@ -81,19 +85,41 @@ function updateSuggestionBox(id, suggestions, filter) {
     });
 }
 
+function updatePipeSuggestionBox(pipeItems, filter) {
+    const container = document.getElementById('pipes');
+    container.innerHTML = `<h3>Pipes</h3>`;
+
+    pipeItems.forEach(pipe => {
+        const categoryContainer = document.createElement('div');
+        categoryContainer.innerHTML = `<h4 class="pipe_category">${pipe.category}</h4>`;
+        pipe.items.filter(word => word.toLowerCase().includes(filter)).forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = `suggestion-item pipe`;
+            item.innerText = suggestion;
+            item.addEventListener('click', () => {
+                insertSuggestion(document.getElementById('editor'), suggestion, 'pipe');
+            });
+            categoryContainer.appendChild(item);
+        });
+        container.appendChild(categoryContainer);
+    });
+}
+
 function insertSuggestion(editor, suggestion, type) {
     const text = editor.innerText;
     const words = text.split(/\s+/);
-    
+
     let updatedSuggestion = suggestion;
     if (type === 'dictionaries') {
         updatedSuggestion = `${suggestion}: `;
+    } else if (type !== 'pipe') {
+        updatedSuggestion = `${suggestion}`;
     }
-    
+
     words[words.length - 1] = updatedSuggestion;
     const newText = words.join(' ');
     editor.innerText = newText;
-    
+
     // Reapply syntax highlighting
     const highlightedText = highlightSyntax(newText);
     editor.innerHTML = highlightedText;
@@ -104,3 +130,4 @@ function insertSuggestion(editor, suggestion, type) {
 updateSuggestionBox('attributes', copernicusAttributes, '');
 updateSuggestionBox('functions', copernicusFunctions, '');
 updateSuggestionBox('dictionaries', copernicusDictionaries, '');
+updatePipeSuggestionBox(pipeItems, '');
