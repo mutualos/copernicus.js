@@ -1,0 +1,82 @@
+body {
+    display: flex;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #1e1e1e;
+    color: #dcdcdc;
+}
+#sidebar {
+    width: 40%;
+    background: #2e2e2e;
+    padding: 10px;
+    box-sizing: border-box;
+    border-right: 1px solid #3c3c3c;
+    overflow-y: auto;
+    margin-left: 1em;
+}
+#editor-container {
+    width: 60%;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
+#editor {
+    width: 100%;
+    height: calc(100vh - 20px);
+    border: 1px solid #3c3c3c;
+    padding: 10px;
+    font-size: 16px;
+    font-family: monospace;
+    white-space: pre;
+    overflow: auto;
+    outline: none;
+    background-color: #1e1e1e;
+    color: #dcdcdc;
+}
+.keyword {
+    color: #569cd6;
+    font-weight: bold;
+}
+.function {
+    color: #dcdcaa;
+}
+.attribute {
+    color: #ce9178;
+}
+
+.dictionaries {
+    color: #9cdcfe;
+}
+
+.suggestion {
+    margin-bottom: 10px;
+}
+.suggestion h3 {
+    margin: 0 0 5px 0;
+    color: #dcdcdc;
+}
+.suggestion-item {
+    padding: 5px;
+    cursor: pointer;
+    background: #3c3c3c;
+    border: 1px solid #3c3c3c;
+    margin-bottom: 3px;
+    transition: background 0.3s ease;
+}
+.suggestion-item:hover {
+    background: #5c5c5c;
+}
+.suggestion-item.function {
+    color: #dcdcaa;
+}
+.suggestion-item.attribute {
+    color: #9cdcfe;
+}
+.suggestion-item.dictionaries {
+    color: #9cdcfe;
+}
+.value {
+    color: #da70d6; /* Example color for values */
+}
