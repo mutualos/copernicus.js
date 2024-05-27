@@ -14,3 +14,4 @@ const translations = {
         "Previous_Average_Balance": "balance"
     }
 };
+window.translations = translations;
