@@ -2,26 +2,35 @@ let copernicusFunctions = [];
 let copernicusAttributes = [];
 let copernicusDictionaries = [];
 let pipeItems = [];
+let functionDescriptions = {};
+let attributeDescriptions = {};
+let dictionaryDescriptions = {};
 
 function extractFromLibrary(libraryObject) {
-    for (let key in libraryObject) {
-        if (typeof libraryObject[key] === 'function') {
+    if (libraryObject.functions) {
+        for (let key in libraryObject.functions) {
             copernicusFunctions.push(key);
-        } else if (typeof libraryObject[key] === 'object' && !Array.isArray(libraryObject[key])) {
-            copernicusDictionaries.push(key);
-        } else {
+            functionDescriptions[key] = libraryObject.functions[key].description;
+        }
+    }
+    if (libraryObject.attributes) {
+        for (let key in libraryObject.attributes) {
             copernicusAttributes.push(key);
+            attributeDescriptions[key] = libraryObject.attributes[key].description;
+        }
+    }
+    if (libraryObject.dictionaries) {
+        for (let key in libraryObject.dictionaries) {
+            copernicusDictionaries.push(key);
+            dictionaryDescriptions[key] = libraryObject.dictionaries[key].description;
         }
     }
 }
 
 function extractFromPipes(pipesObject) {
-    console.log('Extracting pipes:', pipesObject); // Debug statement
     for (let category in pipesObject) {
-        console.log('Category:', category); // Debug statement
         let categoryItems = [];
         for (let key in pipesObject[category]) {
-            console.log('Value:', pipesObject[category][key]); // Debug statement
             categoryItems.push(pipesObject[category][key]);
         }
         pipeItems.push({ category: category, items: categoryItems });
@@ -34,10 +43,7 @@ function loadAllLibraries() {
     if (window.financial) extractFromLibrary(financial);
 
     if (window.translations) {
-        console.log('Translations found:', window.translations); // Debug statement
         extractFromPipes(window.translations);
-    } else {
-        console.log('Translations not found'); // Debug statement
     }
 
     updateSuggestionBox('attributes', copernicusAttributes, '');
@@ -49,4 +55,7 @@ function loadAllLibraries() {
 document.addEventListener('DOMContentLoaded', () => {
     loadAllLibraries();
     console.log('Pipe Items:', pipeItems); // Log pipe items for debugging
+    console.log('Function Descriptions:', functionDescriptions); // Log function descriptions for debugging
+    console.log('Attribute Descriptions:', attributeDescriptions); // Log attribute descriptions for debugging
+    console.log('Dictionary Descriptions:', dictionaryDescriptions); // Log dictionary descriptions for debugging
 });
