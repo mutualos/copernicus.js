@@ -15,7 +15,7 @@ body {
     box-sizing: border-box;
     border-right: 1px solid #3c3c3c;
     overflow-y: auto;
-    margin-left: 1em;
+    margin-bottom: 3em;
 }
 
 #editor-container {
@@ -32,12 +32,13 @@ body {
     box-sizing: border-box;
     border-left: 1px solid #3c3c3c;
     overflow-y: auto;
+    margin-bottom: 3em;
 }
 
 #editor {
     width: 100%;
-    height: calc(100vh - 20px);
-    border: 1px solid #3c3c3c;
+    height: calc(100vh - 90px);
+    /* border: 1px solid #3c3c3c; */
     font-size: 16px;
     font-family: monospace;
     white-space: pre-wrap; /* Allow word wrap */
@@ -113,4 +114,50 @@ body {
 
 .pipe_category {
     text-transform: uppercase;
+}
+/* Fixed Footer */
+.fixed-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #001f3f;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.fixed-footer input[type="file"] {
+    color: white;
+    background-color: #007bff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.fixed-footer input[type="file"]::-webkit-file-upload-button {
+    color: white;
+    background-color: #007bff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.fixed-footer button {
+    color: white;
+    background-color: #28a745; /* Changed background color for more contrast */
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.fixed-footer button:hover {
+    background-color: #218838;
 }
