@@ -6,6 +6,8 @@ function highlightSyntax(text) {
     const parts = text.split(/([\(\)])/g);
     let highlighted = '';
 
+    const allPipeItems = pipeItems.map(item => item.items).flat();
+
     parts.forEach(part => {
         if (part === '(') {
             const color = colorMap[stack.length % colorMap.length];
@@ -25,7 +27,7 @@ function highlightSyntax(text) {
                 .replace(new RegExp(`\\b(${copernicusAttributes.join('|')})\\b`, 'g'), '<span class="attribute">$1</span>')
                 .replace(new RegExp(`\\b(${copernicusDictionaries.join('|')})\\b`, 'g'), '<span class="dictionaries">$1</span>')
                 .replace(new RegExp(`\\b(${copernicusDictionaries.join('|')})\\s*:\\s*(\\d+|".*?")`, 'g'), '<span class="dictionaries">$1</span>:<span class="value">$2</span>')
-                .replace(new RegExp(`\\b(${pipeItems.map(item => item.items).flat().join('|')})\\b`, 'g'), '<span class="pipe">$1</span>'); // Highlight pipe items
+                .replace(new RegExp(`\\b(${allPipeItems.join('|')})\\b`, 'g'), '<span class="pipe">$1</span>'); // Highlight pipe items
         }
     });
 
@@ -75,9 +77,19 @@ function updateSuggestionBox(id, suggestions, filter) {
     container.innerHTML = `<h3>${id.charAt(0).toUpperCase() + id.slice(1)}</h3>`;
 
     suggestions.filter(word => word.toLowerCase().includes(filter)).forEach(suggestion => {
+        let description = '';
+        if (id === 'functions') {
+            description = functionDescriptions[suggestion] || '';
+        } else if (id === 'attributes') {
+            description = attributeDescriptions[suggestion] || '';
+        } else if (id === 'dictionaries') {
+            description = dictionaryDescriptions[suggestion] || '';
+        }
+        
         const item = document.createElement('div');
         item.className = `suggestion-item ${id}`;
         item.innerText = suggestion;
+        item.setAttribute('title', description); // Add tooltip
         item.addEventListener('click', () => {
             insertSuggestion(document.getElementById('editor'), suggestion, id);
         });
@@ -112,7 +124,7 @@ function insertSuggestion(editor, suggestion, type) {
     let updatedSuggestion = suggestion;
     if (type === 'dictionaries') {
         updatedSuggestion = `${suggestion}: `;
-    } else if (type !== 'pipe') {
+    } else {
         updatedSuggestion = `${suggestion}`;
     }
 
