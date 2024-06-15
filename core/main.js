@@ -187,7 +187,6 @@ function displayResults(results) {
     const columns = window.buildConfig.presentation.columns;
     const primaryKey = window.buildConfig.presentation.primary_key;
     const sortConfig = window.buildConfig.presentation.sort;
-    const chartConfig = window.buildConfig.presentation.chart;
 
     // Create table headers based on the presentation settings
     columns.forEach(column => {
@@ -211,13 +210,17 @@ function displayResults(results) {
                 if (column.key !== primaryKey) {
                     const currentVal = combinedResults[primaryKeyValue][column.key];
                     const newVal = result[column.key];
-                    if (column.type === 'category') {
-                        combinedResults[primaryKeyValue][column.key] = newVal;
+
+                    if (column.type === 'function') {
+                        // For 'function' type, evaluate the function formula
+                        const functionFormula = column.function;
+                        const evaluatedValue = evalFormula(result, functionFormula, {}, libraries);
+                        combinedResults[primaryKeyValue][column.key] = evaluatedValue;
                     } else if (!isNaN(parseFloat(newVal)) && !isNaN(parseFloat(currentVal))) {
                         combinedResults[primaryKeyValue][column.key] = parseFloat(currentVal) + parseFloat(newVal);
                     } else if (!currentVal) {
                         combinedResults[primaryKeyValue][column.key] = newVal;
-                    } else if (String(currentVal).includes("undefined") || String(currentVal).includes("NaN")) {
+                    } else if (currentVal.includes("undefined") || currentVal.includes("NaN")) {
                         combinedResults[primaryKeyValue][column.key] = parseFloat(newVal) || 0;
                     } else if (!newVal || isNaN(newVal)) {
                         combinedResults[primaryKeyValue][column.key] = currentVal;
@@ -252,7 +255,7 @@ function displayResults(results) {
                 value = '';
             } else {
                 switch (column.type) {
-                    case 'integer': 
+                    case 'integer':
                         value = parseInt(value, 10);
                         if (isNaN(value)) value = 0;
                         break;
@@ -283,6 +286,11 @@ function displayResults(results) {
                         value = parseInt(value, 10);
                         if (isNaN(value)) value = 0;
                         break;
+                    case 'function':
+                        // Evaluate the function formula for this row
+                        const functionFormula = column.function;
+                        value = evalFormula(result, functionFormula, {}, libraries);
+                        break;
                     default:
                         value = value;
                 }
@@ -302,20 +310,18 @@ function displayResults(results) {
     table.appendChild(tbody);
     tableContainer.appendChild(table);
 
-    if (window.buildConfig.presentation.chart) {
-        // Create the chart container and canvas
-        const chartContainer = document.getElementById('chartContainer');
-        chartContainer.innerHTML = '<canvas id="branch_chart"></canvas>';
-        const ctx = document.getElementById('branch_chart').getContext('2d');
-
-        // Prepare data for the chart
+    // Prepare data for the chart
+    const chartConfig = window.buildConfig.presentation.chart;
+    if (chartConfig) {
+        const chartKey = chartConfig.key;
         const chartResults = {};
+
         combinedResultsArray.forEach(result => {
-            const chartValue = result[chartConfig.key];
-            if (chartResults[chartValue]) {
-                chartResults[chartValue] += parseFloat(result.result);
+            const key = result[chartKey];
+            if (chartResults[key]) {
+                chartResults[key] += parseFloat(result.result);
             } else {
-                chartResults[chartValue] = parseFloat(result.result);
+                chartResults[key] = parseFloat(result.result);
             }
         });
 
@@ -323,6 +329,7 @@ function displayResults(results) {
         const chartData = Object.values(chartResults);
 
         // Create the chart
+        const ctx = document.getElementById('branchChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
