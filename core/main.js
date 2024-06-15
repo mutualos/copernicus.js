@@ -1,56 +1,58 @@
-//const pipeFormula = "((annualRate - trates:12)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve"; // Example formula
-
 document.addEventListener('allLibrariesLoaded', function(e) {
     const loadedLibraries = e.detail;
     console.log('All libraries loaded:', loadedLibraries);
+    /*
     // Testing-demo data 
     const headers = ["Portfolio", "Date_Opened", "Maturity_Date", "Branch_Number", "Class_Code", "Opened_by_Resp_Code", "Principal", "Amount_Last_Payment", "Rate_Over_Split", "Status_Code", "Risk_Rating", "Late_Charges"];
     const dataLines = [
         '123456789,2018-06-15,2038-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0',
         '123456790,2017-06-15,2037-07-01,1,4,92,161376.77,1466.67,0.0625,0,3,0',
-        '123456790,2017-06-15,2037-07-01,1,4,92,100000.00,1466.67,0.0625,0,3,0'
+        '123456790,2017-06-15,2037-07-01,2,4,92,100000.00,1466.67,0.0625,0,3,0'
     ];
-    const pipeFormula = '((annualRate - trates:remainingMonths)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve'; // Example formula
+    
+    const pipeFormula = '((annualRate - (trates:remainingMonths + marginTarget)/2)  * averagePrincipal - originationExpense - servicingExpense) * (1 - taxRate) - loanLossReserve'; // Example formula
     const pipeID = 'loans'; // Assuming 'loans' is a valid pipeID
     allResults = processFormula(dataLines, headers, pipeFormula, pipeID, loadedLibraries);
     displayResults(allResults);
-
-    document.getElementById('run').addEventListener('click', () => {
-        const files = document.getElementById('csvPipe').files;
-        if (!files.length) {
-            console.log("No files selected.");
-            return;
-        }
-    
-        const processingPromises = [];
-        let allResults = [];
-    
-        Array.from(files).forEach(file => {
-            const result = getFormulaAndPipeIDByComponent(file.name);
-            if (result) {
-                const { formula, pipeID } = result;
-                console.log('Processing:', pipeID);
-                processingPromises.push(
-                    readFileAsync(file, formula, pipeID, loadedLibraries)
-                    .then(fileResults => {
-                        allResults = allResults.concat(fileResults);
-                    })
-                );
-            } else {
-                console.error(`No matching formula for file ${file.name}. Skipping.`);
+    */
+    const runButton = document.getElementById('run');
+    if (runButton) {
+        runButton.addEventListener('click', () => {
+            const files = document.getElementById('csvPipe').files;
+            if (!files.length) {
+                console.log("No files selected.");
+                return;
             }
-        });
-    
-        Promise.all(processingPromises)
-            .then(() => {
-                console.log('All files processed successfully');
-                displayResults(allResults);
-            })
-            .catch(error => {
-                console.error('Error processing files:', error);
+        
+            const processingPromises = [];
+            let allResults = [];
+        
+            Array.from(files).forEach(file => {
+                const result = getFormulaAndPipeIDByComponent(file.name);
+                if (result) {
+                    const { formula, pipeID } = result;
+                    console.log('Processing:', pipeID);
+                    processingPromises.push(
+                        readFileAsync(file, formula, pipeID, loadedLibraries)
+                        .then(fileResults => {
+                            allResults = allResults.concat(fileResults);
+                        })
+                    );
+                } else {
+                    console.error(`No matching formula for file ${file.name}. Skipping.`);
+                }
             });
-    });
-    
+        
+            Promise.all(processingPromises)
+                .then(() => {
+                    console.log('All files processed successfully');
+                    displayResults(allResults);
+                })
+                .catch(error => {
+                    console.error('Error processing files:', error);
+                });
+        });
+    }
 });
 
 function getFormulaAndPipeIDByComponent(fileName) {
@@ -71,13 +73,12 @@ function getFunctionArgs(func) {
 }
 
 function evalFormula(data, formula, translations, libraries) {
-    //console.log('Libraries object:', libraries);
-
+    console.log('data', data)
     try {
         // Step 1: Replace attributes
         let processedFormula = formula.replace(/\b(\w+)\b/g, (match) => {
-            if (libraries.hasOwnProperty(match) && typeof libraries[match] !== 'function' && typeof libraries[match] !== 'object') {
-                return libraries[match];
+            if (libraries.attributes && libraries.attributes[match]) {
+                return libraries.attributes[match].value;
             } else if (data.hasOwnProperty(match)) {
                 const value = data[match];
                 if (!isNaN(Date.parse(value))) {
@@ -92,8 +93,8 @@ function evalFormula(data, formula, translations, libraries) {
 
         // Step 2: Replace functions
         processedFormula = processedFormula.replace(/\b(\w+)\b/g, (match) => {
-            if (typeof libraries[match] === 'function') {
-                const argsNames = getFunctionArgs(libraries[match]);
+            if (libraries.functions && libraries.functions[match] && typeof libraries.functions[match].implementation === 'function') {
+                const argsNames = getFunctionArgs(libraries.functions[match].implementation);
                 const argsValues = argsNames.map(name => {
                     if (data[name] === undefined) return 'null';
                     const value = data[name];
@@ -103,10 +104,10 @@ function evalFormula(data, formula, translations, libraries) {
                     return isNaN(value) ? `'${value}'` : value;
                 }).join(', ');
 
-                const functionCall = `libraries.${match}(${argsValues})`;
-                //console.log('Function call:', functionCall);
+                const functionCall = `libraries.functions.${match}.implementation(${argsValues})`;
+                console.log('Function call:', functionCall);
                 const functionResult = eval(functionCall);
-                //console.log('Function result:', functionResult);
+                console.log('Function result:', functionResult);
                 return functionResult;
             }
             return match; // Return unchanged if not a function
@@ -114,15 +115,29 @@ function evalFormula(data, formula, translations, libraries) {
 
         console.log('After functions replacement:', processedFormula); // Debugging output
 
+        /*
         // Step 3: Process dictionary lookups
         processedFormula = processedFormula.replace(/\b(\w+:\s*\w+)\b/g, (match) => {
             const [dictName, dictKey] = match.split(':').map(s => s.trim());
-            if (libraries[dictName] && libraries[dictName][dictKey] !== undefined) {
-                return libraries[dictName][dictKey];
+            if (libraries.dictionaries && libraries.dictionaries[dictName] && libraries.dictionaries[dictName].values[dictKey] !== undefined) {
+                return libraries.dictionaries[dictName].values[dictKey];
             }
             throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
         });
-
+        */
+        // Step 3: Process dictionary lookups
+        processedFormula = processedFormula.replace(/\b(\w+):\s*['"]?(\w+)['"]?\b/g, (match, dictName, dictKey) => {
+            //console.log('Dictionary Lookup - Match:', match);
+            //console.log('Dictionary Lookup - dictName:', dictName);
+            //console.log('Dictionary Lookup - dictKey:', dictKey);
+            if (libraries.dictionaries && libraries.dictionaries[dictName] && libraries.dictionaries[dictName].values[dictKey] !== undefined) {
+                const dictValue = libraries.dictionaries[dictName].values[dictKey];
+                //console.log('Dictionary Lookup - dictValue:', dictValue);
+                return `${dictValue}`;
+            }
+            throw new Error(`Dictionary key '${dictKey}' not found in '${dictName}'`);
+        });
+        processedFormula = processedFormula.replace(/['"]+/g, ''); //// Remove any trailing quotes introduced during replacements
         console.log('Final processed formula:', processedFormula); // Debugging output
         return eval(processedFormula); // Evaluate the final formula string
     } catch (error) {
@@ -144,8 +159,9 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
             return obj;
         }, {});
         const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);
-        const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
+        if (result === null) return; // Skip if result is null
 
+        const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
         const limitedDataObject = { id };
         columns.forEach(column => {
             if (column in dataObject) {
@@ -171,6 +187,7 @@ function displayResults(results) {
     const columns = window.buildConfig.presentation.columns;
     const primaryKey = window.buildConfig.presentation.primary_key;
     const sortConfig = window.buildConfig.presentation.sort;
+    const chartConfig = window.buildConfig.presentation.chart;
 
     // Create table headers based on the presentation settings
     columns.forEach(column => {
@@ -194,12 +211,13 @@ function displayResults(results) {
                 if (column.key !== primaryKey) {
                     const currentVal = combinedResults[primaryKeyValue][column.key];
                     const newVal = result[column.key];
-
-                    if (!isNaN(parseFloat(newVal)) && !isNaN(parseFloat(currentVal))) {
+                    if (column.type === 'category') {
+                        combinedResults[primaryKeyValue][column.key] = newVal;
+                    } else if (!isNaN(parseFloat(newVal)) && !isNaN(parseFloat(currentVal))) {
                         combinedResults[primaryKeyValue][column.key] = parseFloat(currentVal) + parseFloat(newVal);
                     } else if (!currentVal) {
                         combinedResults[primaryKeyValue][column.key] = newVal;
-                    } else if (currentVal.includes("undefined") || currentVal.includes("NaN")) {
+                    } else if (String(currentVal).includes("undefined") || String(currentVal).includes("NaN")) {
                         combinedResults[primaryKeyValue][column.key] = parseFloat(newVal) || 0;
                     } else if (!newVal || isNaN(newVal)) {
                         combinedResults[primaryKeyValue][column.key] = currentVal;
@@ -234,7 +252,7 @@ function displayResults(results) {
                 value = '';
             } else {
                 switch (column.type) {
-                    case 'integer':
+                    case 'integer': 
                         value = parseInt(value, 10);
                         if (isNaN(value)) value = 0;
                         break;
@@ -261,6 +279,10 @@ function displayResults(results) {
                     case 'upper':
                         value = value.toUpperCase();
                         break;
+                    case 'category': 
+                        value = parseInt(value, 10);
+                        if (isNaN(value)) value = 0;
+                        break;
                     default:
                         value = value;
                 }
@@ -279,8 +301,50 @@ function displayResults(results) {
 
     table.appendChild(tbody);
     tableContainer.appendChild(table);
-}
 
+    if (window.buildConfig.presentation.chart) {
+        // Create the chart container and canvas
+        const chartContainer = document.getElementById('chartContainer');
+        chartContainer.innerHTML = '<canvas id="branch_chart"></canvas>';
+        const ctx = document.getElementById('branch_chart').getContext('2d');
+
+        // Prepare data for the chart
+        const chartResults = {};
+        combinedResultsArray.forEach(result => {
+            const chartValue = result[chartConfig.key];
+            if (chartResults[chartValue]) {
+                chartResults[chartValue] += parseFloat(result.result);
+            } else {
+                chartResults[chartValue] = parseFloat(result.result);
+            }
+        });
+
+        const chartLabels = Object.keys(chartResults);
+        const chartData = Object.values(chartResults);
+
+        // Create the chart
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: chartConfig.label,
+                    data: chartData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
 
 function showSpinner() {
     document.getElementById('spinnerOverlay').style.visibility = 'visible';
