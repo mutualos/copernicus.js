@@ -47,12 +47,11 @@
                 columns: [
                     { header: 'ID', key: 'ID', type: 'integer' },
                     { header: 'Principal', key: 'principal', type: 'currency' },
-                    { header: 'Balance', key: 'balance', type: 'currency' },
                     { header: 'Responsibilty', key: 'responsibilty', type: 'category' },
                     { header: 'Quarter', key: 'quarter', type: 'function', function: 'openedInQuarter ? principal : null', pipeID: 'loans'},
                     { header: 'Result', key: 'result', type: 'float' }
                 ],
-                primary_key: 'ID',
+                primary_key: 'responsibilty',
                 sort: { key: 'result', order: 'desc' },
                 chart: {
                     key: 'responsibilty', // The key to group by for charting
