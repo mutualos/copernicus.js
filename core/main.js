@@ -291,9 +291,12 @@ function displayResults(results) {
                     case 'upper':
                         value = value.toUpperCase();
                         break;
-                    case 'category': 
-                        value = parseInt(value, 10);
-                        if (isNaN(value)) value = 0;
+                    case 'category':
+                        if(translations[column.key][value]) {
+							value = translations[column.key][value];
+						}
+                        //value = parseInt(value, 10);
+                        //if (isNaN(value)) value = 0;
                         break;
                     default:
                         value = value;
