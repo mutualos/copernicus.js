@@ -38,7 +38,8 @@ button:hover {
   border: 1px solid #ddd;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
-  margin: 20px; /* Margin for top, bottom, left, and right */
+  /* top | left and right | bottom */
+  margin: 0.5em auto 4.5em;
   background-color: white;
 }
 
@@ -105,7 +106,6 @@ td {
   100% { transform: rotate(360deg); }
 }
 
-
 /* Fixed Footer */
 .fixed-footer {
   position: fixed;
@@ -121,29 +121,130 @@ td {
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.fixed-footer input[type="file"] {
-  color: white;
-  background-color: #007bff;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  margin-right: 10px;
-  cursor: pointer;
-}
-
-.fixed-footer input[type="file"]::-webkit-file-upload-button {
-  color: white;
-  background-color: #007bff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
 .fixed-footer button {
   background-color: #28a745; /* Changed background color for more contrast */
 }
 
 .fixed-footer button:hover {
   background-color: #218838;
+}
+
+/* Modal styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #00e600, #004d00);
+  color: white;
+  padding: 10px 20px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  margin: 0;
+}
+.modal-header img {
+  height: 40px;
+  width: 40px;
+}
+.modal-header h2 {
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+}
+.close {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover,
+.close:focus {
+  color: #ccc;
+  text-decoration: none;
+}
+.modal-body {
+  padding: 20px;
+}
+.button-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+.component-list {
+  list-style: none;
+  padding: 0;
+}
+.component-list li {
+  background: #eee;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.component-list .formula {
+  display: none;
+  background: #f9f9f9;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+/* Custom styles for file input */
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+input[type="file"] {
+  color: transparent; /* Hide the text "No file chosen" */
+  background-color: #007bff; /* Button color */
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+  position: relative;
+  width: 130px; /* Adjust the width as needed */
+}
+input[type="file"]::before {
+  content: 'Choose Files'; /* Custom button text */
+  color: white;
+  background-color: #007bff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto; /* Ensure the button text fits within the button */
+  text-align: center; /* Center the text */
+}
+input[type="file"]::-webkit-file-upload-button {
+  visibility: hidden; /* Hide the default button */
+}
+.file-names {
+  font-size: 14px;
+  color: #333;
 }
