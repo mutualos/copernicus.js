@@ -130,34 +130,35 @@ body {
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.fixed-footer input[type="file"] {
+.fixed-footer button {
+    background-color: #28a745; 
+    color: white;
+    border: none;
+    padding: 8px 16px; /* Smaller padding for smaller buttons */
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px; /* Smaller font size */
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.fixed-footer button:hover {
+    background-color: #218838;
+}
+
+.fixed-footer input[type="text"] {
     color: white;
     background-color: #007bff;
     border: none;
     padding: 10px;
     border-radius: 5px;
     margin-right: 10px;
-    cursor: pointer;
 }
 
-.fixed-footer input[type="file"]::-webkit-file-upload-button {
-    color: white;
-    background-color: #007bff;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.fixed-footer button {
-    color: white;
-    background-color: #28a745; /* Changed background color for more contrast */
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.fixed-footer button:hover {
-    background-color: #218838;
-}
+.button-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
