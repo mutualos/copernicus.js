@@ -6,7 +6,7 @@ function loadLibrary(library, callback) {
     if (typeof library === 'string' && (library.startsWith('http://') || library.startsWith('https://'))) {
         libraryUrl = library;
     } else {
-        libraryUrl = `library/${library}.js`;
+        libraryUrl = `../library/${library}.js`;
     }
 
     script.src = libraryUrl;
@@ -27,7 +27,7 @@ function loadLibrary(library, callback) {
 
         // Merge the library content into the combined libraries object if valid
         if (libContent) {
-            Object.assign(window.libraries, libContent);
+            mergeLibraries(window.libraries, libContent);
         } else {
             console.error(`Library content for ${libraryUrl} is undefined or null.`);
         }
@@ -41,6 +41,21 @@ function loadLibrary(library, callback) {
     };
 
     document.head.appendChild(script);
+}
+
+function mergeLibraries(target, source) {
+    if (source.functions) {
+        target.functions = target.functions || {};
+        Object.assign(target.functions, source.functions);
+    }
+    if (source.attributes) {
+        target.attributes = target.attributes || {};
+        Object.assign(target.attributes, source.attributes);
+    }
+    if (source.dictionaries) {
+        target.dictionaries = target.dictionaries || {};
+        Object.assign(target.dictionaries, source.dictionaries);
+    }
 }
 
 function loadLibraries(libraries, finalCallback) {
@@ -63,6 +78,7 @@ function loadLibraries(libraries, finalCallback) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('starting libraries load')
     if (window.buildConfig && window.buildConfig.libraries) {
         loadLibraries(window.buildConfig.libraries, (loadedLibraries) => {
             const conflicts = detectConflicts(loadedLibraries);
