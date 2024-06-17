@@ -24,6 +24,11 @@ const translations = {
         "PMTD_Number_of_Deposits": "deposits",
         "Branch_Number": "branch",
         "Opened_by_Resp_Code": "responsibilty"
+    },
+    responsibilty: {
+		"200": "Tonya",
+        "300": "Angela",
+		"400": "Bob"
     }
 };
 window.translations = translations;
