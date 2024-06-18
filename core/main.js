@@ -73,7 +73,7 @@ function getFunctionArgs(func) {
 }
 
 function evalFormula(data, formula, translations, libraries) {
-    console.log('data', data)
+    //console.log('data', data)
     try {
         // Step 1: Replace attributes
         let processedFormula = formula.replace(/\b(\w+)\b/g, (match) => {
@@ -292,14 +292,14 @@ function displayResults(results) {
                         value = value.toUpperCase();
                         break;
                     case 'category':
-                        if(translations[column.key][value]) {
-							value = translations[column.key][value];
-						}
+                        if (translations[column.key][value]) {
+			    value = translations[column.key][value];
+			}
                         //value = parseInt(value, 10);
                         //if (isNaN(value)) value = 0;
                         break;
                     default:
-                        value = value;
+                	value = value;
                 }
             }
 
@@ -322,18 +322,20 @@ function displayResults(results) {
         const chartContainer = document.getElementById('chartContainer');
         chartContainer.innerHTML = '<canvas id="branch_chart"></canvas>';
         const ctx = document.getElementById('branch_chart').getContext('2d');
-
         // Prepare data for the chart
         const chartResults = {};
         combinedResultsArray.forEach(result => {
-            const chartValue = result[chartConfig.key];
+            let chartValue = result[chartConfig.key];
+            if (translations[chartConfig.key][chartValue]) {
+                chartValue = translations[chartConfig.key][chartValue];
+            }
+            // extra measure to combine chart values when necessary
             if (chartResults[chartValue]) {
                 chartResults[chartValue] += parseFloat(result.result);
             } else {
                 chartResults[chartValue] = parseFloat(result.result);
             }
         });
-
         const chartLabels = Object.keys(chartResults);
         const chartData = Object.values(chartResults);
 
