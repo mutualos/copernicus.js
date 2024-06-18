@@ -23,7 +23,7 @@ document.addEventListener('allLibrariesLoaded', function(e) {
                 console.log("No files selected.");
                 return;
             }
-        
+            showSpinner();
             const processingPromises = [];
             let allResults = [];
         
@@ -374,7 +374,6 @@ function hideSpinner() {
 }
 
 function processLargePipeAsync(csvText, pipeFormula, pipeID, libraries) {
-    showSpinner();
     return new Promise((resolve, reject) => {
         try {
             const dataLines = csvText.split('\n').filter(line => line.trim());
@@ -385,10 +384,8 @@ function processLargePipeAsync(csvText, pipeFormula, pipeID, libraries) {
             reject(error);
         }
     }).then(result => {
-        hideSpinner();
         return result;
     }).catch(error => {
-        hideSpinner();
         throw error;
     });
 }
@@ -400,7 +397,8 @@ function readFileAsync(file, pipeFormula, pipeID, libraries) {
             const text = e.target.result;
             processLargePipeAsync(text, pipeFormula, pipeID, libraries)
                 .then(result => resolve(result))
-                .catch(reject);
+                .catch(reject)
+		.finally(() => hideSpinner());  
         };
         reader.onerror = reject;
         reader.readAsText(file);
