@@ -1,0 +1,39 @@
+<html>
+<script>
+    async function fetchFromApi(endpoint) {
+        const proxyUrl = `https://copernicusjs.com/proxy.php?url=${endpoint}`;
+        console.log('proxyURL', proxyUrl);
+
+        try {
+            const response = await fetch(proxyUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add other headers if necessary
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            console.log(response)
+            const contentType = response.headers.get("content-type");
+            let data;
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+    // example
+    fetchFromApi('https://copernicusjs.com/api/trate/')
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+</script>
+</html>
