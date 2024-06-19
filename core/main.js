@@ -292,9 +292,9 @@ function displayResults(results) {
                         value = value.toUpperCase();
                         break;
                     case 'category':
-                        if (translations[column.key][value]) {
-			    value = translations[column.key][value];
-			}
+                        if (column.key in translations) {
+                            value = translations[column.key][value];
+                        }
                         //value = parseInt(value, 10);
                         //if (isNaN(value)) value = 0;
                         break;
@@ -318,7 +318,7 @@ function displayResults(results) {
     tableContainer.appendChild(table);
 
     if (window.buildConfig.presentation.chart) {
-        // Create the chart container and canvas
+        console.log('Creating chart container and canvas');
         const chartContainer = document.getElementById('chartContainer');
         chartContainer.innerHTML = '<canvas id="branch_chart"></canvas>';
         const ctx = document.getElementById('branch_chart').getContext('2d');
@@ -326,7 +326,7 @@ function displayResults(results) {
         const chartResults = {};
         combinedResultsArray.forEach(result => {
             let chartValue = result[chartConfig.key];
-            if (translations[chartConfig.key][chartValue]) {
+            if (chartValue in translations) {
                 chartValue = translations[chartConfig.key][chartValue];
             }
             // extra measure to combine chart values when necessary
