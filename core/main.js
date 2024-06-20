@@ -308,7 +308,11 @@ function displayResults(results) {
                         //if (isNaN(value)) value = 0;
                         break;
                     default:
-                	value = value;
+                	if(!isNaN(value)) {  //fallback - display numbers as float
+			    value = parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			} else {
+			    value = value;
+			}
                 }
             }
 
