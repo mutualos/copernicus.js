@@ -340,9 +340,9 @@ function displayResults(results) {
             }
             // extra measure to combine chart values when necessary
             if (chartResults[chartValue]) {
-                chartResults[chartValue] += parseFloat(result.result);
+                chartResults[chartValue] += parseFloat(result[sortConfig.key]);
             } else {
-                chartResults[chartValue] = parseFloat(result.result);
+                chartResults[chartValue] = parseFloat(result[sortConfig.key]);
             }
         });
         const chartLabels = Object.keys(chartResults);
