@@ -301,7 +301,7 @@ function displayResults(results) {
                         value = value.toUpperCase();
                         break;
                     case 'category':
-                        if (column.key in translations) {
+                        if (value in translations[column.key]) {
                             value = translations[column.key][value];
                         }
                         //value = parseInt(value, 10);
