@@ -248,3 +248,11 @@ input[type="file"]::-webkit-file-upload-button {
   font-size: 14px;
   color: #333;
 }
+
+@media print {
+  .table-container {
+    margin-top: 20px;
+    overflow: visible !important;
+    height: auto !important;
+  }
+}
