@@ -335,7 +335,7 @@ function displayResults(results) {
         const chartResults = {};
         combinedResultsArray.forEach(result => {
             let chartValue = result[chartConfig.key];
-            if (chartValue in translations) {
+            if (chartValue in translations[chartConfig.key]) {
                 chartValue = translations[chartConfig.key][chartValue];
             }
             // extra measure to combine chart values when necessary
