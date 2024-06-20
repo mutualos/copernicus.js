@@ -277,7 +277,16 @@ function displayResults(results) {
                         if (isNaN(value)) {
                             value = '$0.00';
                         } else {
-                            value = `$${value}`;
+                            value = value < 0 ? `-$${Math.abs(value).toFixed(2)}` : `$${value}`;
+                        }
+                        break;
+                    case 'USD':
+                        value = parseFloat(value).toFixed(2);
+                        if (isNaN(value)) {
+                            value = '$0.00';
+                        } else {
+                            const absValue = Math.abs(value).toFixed(2);
+                            value = value < 0 ? `-$${absValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}` : `$${absValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
                         }
                         break;
                     case 'percentage':
