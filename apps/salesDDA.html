@@ -45,18 +45,16 @@
             version: '1.0.0',
             presentation: {
                 columns: [
-                    { header: 'ID', key: 'ID', type: 'integer' },
-                    { header: 'Balance', key: 'balance', type: 'currency' },
                     { header: 'Responsibilty', key: 'responsibilty', type: 'category' },
                     { header: 'Quarter', key: 'quarter', type: 'function', function: 'openedInQuarter ? balance : null', pipeID: 'checking'},
-                    { header: 'Result', key: 'result', type: 'float' }
+                    { header: 'Annual', key: 'result', type: 'float' } // 'result' key column required
                 ],
                 primary_key: 'responsibilty',
-                sort: { key: 'result', order: 'desc' },
-                chart: {
-                    key: 'responsibilty', // The key to group by for charting
-                    label: 'Results by Responsibilty' // Label for the chart
-                }
+                sort: { key: 'quarter', order: 'desc' },
+                charts: [
+                    { key: 'responsibilty', label: 'Volume by Responsibilty' },
+                    { key: 'count', label: 'New accounts by Responsibilty' }
+                ]
             },
             components: [
                 {
