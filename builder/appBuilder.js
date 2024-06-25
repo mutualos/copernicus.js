@@ -274,7 +274,34 @@ document.getElementById('addColumnBtn').addEventListener('click', () => {
     updateSelectOptions();
 });
 
+document.getElementById('addChartBtn').addEventListener('click', () => {
+    const chartsContainer = document.getElementById('chartsContainer');
+    const chartCard = document.createElement('div');
+    chartCard.className = 'chart-card';
+    chartCard.innerHTML = `
+        <button class="remove-btn" onclick="removeChartCard(this)">X</button>
+        <div class="form-group">
+            <label for="chartLabel">Chart Label:</label>
+            <input type="text" name="chartLabel" class="form-control" placeholder="Label" required>
+        </div>
+        <div class="bar-icon"></div>
+        <div class="form-group">
+            <label for="chartKey">Chart Key:</label>
+            <select name="chartKey" class="form-control">
+                <!-- Options will be populated dynamically -->
+            </select>
+        </div>
+    `;
+    chartsContainer.prepend(chartCard);
+    updateSelectOptions();
+});
+
 function removeColumnCard(button) {
+    button.parentElement.remove();
+    updateSelectOptions();
+}
+
+function removeChartCard(button) {
     button.parentElement.remove();
     updateSelectOptions();
 }
@@ -292,6 +319,7 @@ function updateSelectOptions() {
 
     const primaryKeySelect = document.getElementById('primaryKey');
     const sortKeySelect = document.getElementById('sortKey');
+    const chartKeySelects = document.querySelectorAll('select[name="chartKey"]');
 
     primaryKeySelect.innerHTML = '';
     sortKeySelect.innerHTML = '';
@@ -301,7 +329,17 @@ function updateSelectOptions() {
         option.value = key;
         option.text = key;
         primaryKeySelect.appendChild(option.cloneNode(true));
-        sortKeySelect.appendChild(option);
+        sortKeySelect.appendChild(option.cloneNode(true));
+    });
+
+    chartKeySelects.forEach(select => {
+        select.innerHTML = '';
+        keys.forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.text = key;
+            select.appendChild(option.cloneNode(true));
+        });
     });
 }
 
