@@ -53,10 +53,9 @@
                 ],
                 primary_key: 'ID',
                 sort: { key: 'result', order: 'desc' },
-                chart: {
-                    key: 'branch', // The key to group by for charting
-                    label: 'Results by Branch' // Label for the chart
-                }
+                charts: [  // The key to group by for charting and Label for the chart
+                    { key: 'branch', label: 'Volume by Branch' },
+                ]
             },
             components: [
                 {
