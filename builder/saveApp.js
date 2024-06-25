@@ -112,12 +112,28 @@ document.getElementById('saveButton').addEventListener('click', function() {
         const columnsString = columns.map(col => {
             return `\t\t\t\t\t{ header: '${col.header}', key: '${col.key}', type: '${col.type}' }`;
         }).join(',\n');
+
+        const charts = [];
+            const chartCards = document.querySelectorAll('.chart-card');
+
+            chartCards.forEach(card => {
+                const label = card.querySelector('input[name="chartLabel"]').value;
+                const key = card.querySelector('select[name="chartKey"]').value;
+
+                if (label && key) {
+                    charts.push({ key, label });
+                }
+            });
+
+            const chartsString = charts.map(chart => {
+                return `{ key: '${chart.key}', label: '${chart.label}' }`;
+            }).join(',\n');
     
         const primaryKey = document.getElementById('primaryKey').value;
         const sortKey = document.getElementById('sortKey').value;
         const sortOrder = document.getElementById('sortOrder').value;
     
-        return `columns: [\n${columnsString}\n\t\t\t\t],\n\t\t\t\tprimary_key: '${primaryKey}',\n\t\t\t\tsort: { key: '${sortKey}', order: '${sortOrder}' }`;
+        return `columns: [\n${columnsString}\n\t\t\t\t],\n\t\t\t\tprimary_key: '${primaryKey}',\n\t\t\t\tsort: { key: '${sortKey}', order: '${sortOrder}',\n\t\t\t\tcharts: [\n\t\t\t\t\t${chartsString}\n\t\t\t\t] }`;
     }
 
     // Create components based on the formulas
@@ -171,8 +187,6 @@ document.getElementById('saveButton').addEventListener('click', function() {
             version: '${document.getElementById("version").value}',
             presentation: {
                 ${generateColumnsString()},
-                primary_key: 'ID',
-                sort: { key: 'result', order: 'desc' }
             },
             components: ${JSON.stringify(components, null, 4)}
         };
