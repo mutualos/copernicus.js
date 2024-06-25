@@ -165,11 +165,11 @@ function processFormula(dataLines, headers, pipeFormula, pipeID, libraries) {
             if (columnConfig && columnConfig.type === 'function') {
                 const functionFormula = columnConfig.function;
                 const columnPipeID = columnConfig.pipeID || pipeID; // Use the column's pipeID if available, otherwise use the main pipeID
-                dataObject[columnConfig.key] = evalFormula(dataObject, functionFormula, translations[columnPipeID], libraries);
+                dataObject[columnConfig.key] = evalFormula(dataObject, functionFormula, translations.pipes[columnPipeID], libraries);
             }
         });
 
-        const result = evalFormula(dataObject, pipeFormula, translations[pipeID], libraries);
+        const result = evalFormula(dataObject, pipeFormula, translations.pipes[pipeID], libraries);
         const id = dataObject['ID'] || dataObject[Object.keys(dataObject)[0]]; // Use 'ID' or first key if 'ID' is not available
 
         const limitedDataObject = { id };
@@ -199,7 +199,7 @@ function displayResults(results) {
     const columns = window.buildConfig.presentation.columns;
     const primaryKey = window.buildConfig.presentation.primary_key;
     const sortConfig = window.buildConfig.presentation.sort;
-    const chartConfig = window.buildConfig.presentation.chart;
+    const chartConfigs = window.buildConfig.presentation.charts;
 
     // Create table headers based on the presentation settings
     columns.forEach(column => {
@@ -308,11 +308,11 @@ function displayResults(results) {
                         //if (isNaN(value)) value = 0;
                         break;
                     default:
-                	if(!isNaN(value)) {  //fallback - display numbers as float
-			    value = parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-			} else {
-			    value = value;
-			}
+                	if (!isNaN(value)) {  //fallback - display numbers as float
+                        value = parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    } else {
+                        value = value;
+                    }
                 }
             }
 
@@ -330,48 +330,64 @@ function displayResults(results) {
     table.appendChild(tbody);
     tableContainer.appendChild(table);
 
-    if (window.buildConfig.presentation.chart) {
-        console.log('Creating chart container and canvas');
+    if (chartConfigs) {
         const chartContainer = document.getElementById('chartContainer');
-        chartContainer.innerHTML = '<canvas id="branch_chart"></canvas>';
-        const ctx = document.getElementById('branch_chart').getContext('2d');
-        // Prepare data for the chart
-        const chartResults = {};
-        combinedResultsArray.forEach(result => {
-            let chartValue = result[chartConfig.key];
-            if (chartValue in translations[chartConfig.key]) {
-                chartValue = translations[chartConfig.key][chartValue];
-            }
-            // extra measure to combine chart values when necessary
-            if (chartResults[chartValue]) {
-                chartResults[chartValue] += parseFloat(result[sortConfig.key]);
-            } else {
-                chartResults[chartValue] = parseFloat(result[sortConfig.key]);
-            }
-        });
-        const chartLabels = Object.keys(chartResults);
-        const chartData = Object.values(chartResults);
+        chartContainer.innerHTML = ''; // Clear previous charts
+        chartConfigs.forEach((chartConfig, index) => {
+            // Create the chart container and canvas
+            const canvasId = `chart_${index}`;
+            const canvas = document.createElement('canvas');
+            canvas.id = canvasId;
+            canvas.height = 100; // Adjust the height here
+            chartContainer.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
 
-        // Create the chart
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: chartConfig.label,
-                    data: chartData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+            // Prepare data for the chart
+            const chartResults = {};
+            combinedResultsArray.forEach(result => {
+                let key = chartConfig.key;
+                if (chartConfig.key === 'count') key = primaryKey;
+                let chartValue = result[key];
+                if (key in translations &&  chartValue in translations[key]) {
+                    chartValue = translations[key][chartValue];
+                }
+                // extra measure to combine chart values when necessary
+                key = sortConfig.key;
+                if (chartConfig.key === 'count') key = chartConfig.key;
+                if (chartResults[chartValue]) {
+                    chartResults[chartValue] += parseFloat(result[key]);
+                } else {
+                    chartResults[chartValue] = parseFloat(result[key]);
+                }
+            });
+            const chartLabels = Object.keys(chartResults);
+            const chartData = Object.values(chartResults);
+            
+            // Generate random colors for the chart
+            const backgroundColors = chartLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`);
+            const borderColors = chartLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`);
+
+            // Create the chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: chartConfig.label,
+                        data: chartData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
+            });
         });
     }
 }
@@ -419,7 +435,7 @@ function readFileAsync(file, pipeFormula, pipeID, libraries) {
 }
 
 function translateHeader(pipeID, csvHeader) {
-    const pipeTranslations = translations[pipeID];
+    const pipeTranslations = translations.pipes[pipeID];
     if (pipeTranslations && pipeTranslations[csvHeader]) {
         return pipeTranslations[csvHeader];
     }
