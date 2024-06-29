@@ -9,7 +9,7 @@ const translations = {
             "Class_Code": "type",
             "Portfolio": "ID",
             "Branch_Number": "branch",
-            "Opened_by_Resp_Code": "responsibilty"
+            "Opened_by_Resp_Code": "responsibility"
             // Additional mappings as necessary
         },
         checking: {
@@ -24,10 +24,10 @@ const translations = {
             "PMTD_Interest_Earned": "interestExpense",
             "PMTD_Number_of_Deposits": "deposits",
             "Branch_Number": "branch",
-            "Opened_by_Resp_Code": "responsibilty"
+            "Opened_by_Resp_Code": "responsibility"
         }
     },
-    responsibilty: {
+    responsibility: {
         "100": "Jim",
 	"200": "Tonya",
         "300": "Angela",
