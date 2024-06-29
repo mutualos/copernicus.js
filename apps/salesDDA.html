@@ -45,15 +45,15 @@
             version: '1.0.0',
             presentation: {
                 columns: [
-                    { header: 'Responsibilty', key: 'responsibilty', type: 'category' },
+                    { header: 'Responsibilty', key: 'responsibility', type: 'category' },
                     { header: 'Quarter', key: 'quarter', type: 'function', function: 'openedInQuarter ? balance : null', pipeID: 'checking'},
                     { header: 'Annual', key: 'result', type: 'float' } // 'result' key column required
                 ],
-                primary_key: 'responsibilty',
+                primary_key: 'responsibility',
                 sort: { key: 'quarter', order: 'desc' },
                 charts: [
-                    { key: 'responsibilty', label: 'Volume by Responsibilty' },
-                    { key: 'count', label: 'New accounts by Responsibilty' }
+                    { key: 'responsibility', label: 'Volume by Responsibility' },
+                    { key: 'count', label: 'New accounts by Responsibility' }
                 ]
             },
             components: [
