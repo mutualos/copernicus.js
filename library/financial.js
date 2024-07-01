@@ -33,6 +33,21 @@ const financial = {
                 return months > 0 ? months : 1;
             }
         },
+        lifeInMonths: {
+            description: "Calculates the total months from account opening until today",
+            implementation: function(openDate) {
+                // Check if openDate is a valid date string
+                if (isNaN(Date.parse(openDate))) {
+                    console.error('Invalid date format');
+                    return false;
+                }
+                const openDateObj = new Date(openDate);
+                const today = new Date();
+                const time_difference = today.getTime() - openDataObj.getTime();
+                const life = parseFloat(time_difference / (1000 * 60 * 60 * 24 * 30));
+                return life.toFixed(2);
+            }
+        },
         loanPayment: {
             description: "Calculates the monthly loan payment based on principal, annual rate, and amortization months",
             implementation: function(principal, annualRate, amortizationMonths) {
