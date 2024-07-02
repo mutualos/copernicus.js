@@ -43,7 +43,7 @@ const financial = {
                 }
                 const openDateObj = new Date(openDate);
                 const today = new Date();
-                const time_difference = today.getTime() - openDataObj.getTime();
+                const time_difference = today.getTime() - openDateObj.getTime();
                 const life = parseFloat(time_difference / (1000 * 60 * 60 * 24 * 30));
                 return life.toFixed(2);
             }
@@ -170,7 +170,7 @@ const financial = {
             implementation: function(type) {
                 const identifiedType = libraries.functions.identifyType(type, libraries.dictionaries.ddaTypeID.values);
                 if (identifiedType !== null) {
-                    return libraries.dictionaries.ddaOpenExpense.values[identifiedType].toFixed(2);
+                    return libraries.dictionaries.ddaAnnualExpense.values[identifiedType].toFixed(2);
                 } else {
                     console.error(`type not found for libraries.dictionaries.ddaOpenExpense.values:${type}.`);
                 }
@@ -252,9 +252,9 @@ const financial = {
             description: "The required fed reserve for checking accounts / demand deposit accounts(DDA)",
             value: 0.10
         },
-        savingsCost: {
-            description: "The cost for savings accounts",
-            value: 48
+        savingsAnnualExpense: {
+            description: "The savings account annual operating costs",
+            value: 28
         }
     },
     dictionaries: {
@@ -318,11 +318,11 @@ const financial = {
                 "Tax Exempt Commercial Real Estate": 0.0024
             },
         },
-        ddaOpenExpense: {
-            description: "checking account openning costs",
+        ddaAnnualExpense: {
+            description: "The checking account annual operating costs",
             values: {
-                "Consumer": 84,
-                "Commercial": 109
+                "Consumer": 112,
+                "Commercial": 145
             }
         },
     }
