@@ -25,13 +25,28 @@ const translations = {
             "PMTD_Number_of_Deposits": "deposits",
             "Branch_Number": "branch",
             "Opened_by_Resp_Code": "responsibility"
+        },
+        savings: {
+            "Portfolio": "ID",
+            "Class_Code": "type",
+            "Date_Opened": "openDate",
+            "Previous_Average_Balance": "balance",
+            "PMTD_Service_Charges": "charges",
+            "PMTD_Service_Charge_Waived": "chargesWaived",
+            "PMTD_Other_Charges": "otherCharges",
+            "PMTD_Other_Charges_Waived": "otherChargesWaived",
+            "PMTD_Interest_Earned": "interestExpense",
+            "Number_of_Credits": "deposits",
+            "Number_of_Debits": "withdrawals",
+            "Branch_Number": "branch",
+            "Opened_by_Resp_Code": "responsibility"
         }
     },
     responsibility: {
         "100": "Jim",
-	"200": "Tonya",
+		"200": "Tonya",
         "300": "Angela",
-	"400": "Bob"
+		"400": "Bob"
     },
     branch: {
         "1": "Branch One"
