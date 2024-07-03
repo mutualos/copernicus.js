@@ -303,3 +303,30 @@ th, td {
     height: 24px;
     margin-right: 8px;
   }
+
+/* CSS for placeholders */
+::placeholder {
+    color: #888;
+    opacity: 1;
+    font-style: italic;
+}
+input:-moz-placeholder {
+    color: #888;
+    opacity: 1;
+    font-style: italic;
+}
+input:-ms-input-placeholder {
+    color: #888;
+    opacity: 1;
+    font-style: italic;
+}
+input::-ms-input-placeholder {
+    color: #888;
+    opacity: 1;
+    font-style: italic;
+}
+input::placeholder {
+    color: #888;
+    opacity: 1;
+    font-style: italic;
+}
