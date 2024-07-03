@@ -255,7 +255,7 @@ document.getElementById('addColumnBtn').addEventListener('click', () => {
                     </div>
                     <div class="form-group">
                         <label for="type">Type:</label>
-                        <select name="type" class="form-control">
+                        <select name="type" class="form-control" onchange="handleTypeChange(this)">
                             <option value="float">Float</option>
                             <option value="integer">Integer</option>
                             <option value="USD">USD</option>
@@ -263,6 +263,15 @@ document.getElementById('addColumnBtn').addEventListener('click', () => {
                             <option value="percentage">Percentage</option>
                             <option value="upper">Upper</option>
                             <option value="category">Category</option>
+                            <option value="function">Function</option>
+                        </select>
+                    </div>
+                    <div class="function-fields" style="display:none;">
+                        <label for="functionFormula">Formula:</label>
+                        <textarea name="functionFormula" class="form-control" rows="3"></textarea>
+                        <label for="pipeID">Pipe ID:</label>
+                        <select name="pipeID" class="form-control">
+                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                 </td>
@@ -271,6 +280,7 @@ document.getElementById('addColumnBtn').addEventListener('click', () => {
     `;
     columnsContainer.prepend(columnCard);
     attachChangeListeners(columnCard);
+    populatePipeIDOptions(columnCard);
     updateSelectOptions();
 });
 
@@ -306,6 +316,19 @@ function removeChartCard(button) {
     updateSelectOptions();
 }
 
+function handleTypeChange(select) {
+    // Traverse up to the nearest column-card ancestor
+    const columnCard = select.closest('.column-card');
+    // Find the function-fields element within the column card
+    const functionFields = columnCard.querySelector('.function-fields');
+
+    if (select.value === 'function') {
+        functionFields.style.display = 'block';
+    } else {
+        functionFields.style.display = 'none';
+    }
+}
+
 function updateSelectOptions() {
     const keys = [];
     const columnCards = document.querySelectorAll('.column-card');
@@ -333,11 +356,26 @@ function updateSelectOptions() {
     });
 
     chartKeySelects.forEach(select => {
-        select.innerHTML = '';
+        select.innerHTML = '<option value="count">count</option>';
         keys.forEach(key => {
             const option = document.createElement('option');
             option.value = key;
             option.text = key;
+            select.appendChild(option.cloneNode(true));
+        });
+    });
+}
+
+function populatePipeIDOptions(card) {
+    const pipeIDSelects = card.querySelectorAll('select[name="pipeID"]');
+    const pipes = Object.keys(translations.pipes);
+
+    pipeIDSelects.forEach(select => {
+        select.innerHTML = '';
+        pipes.forEach(pipe => {
+            const option = document.createElement('option');
+            option.value = pipe;
+            option.text = pipe;
             select.appendChild(option.cloneNode(true));
         });
     });
