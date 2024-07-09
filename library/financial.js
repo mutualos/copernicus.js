@@ -26,11 +26,25 @@ const financial = {
         remainingMonths: {
             description: "Calculates the remaining months until maturity date",
             implementation: function(maturityDate) {
-                if (!maturityDate) return null;
+                if (!maturityDate) return false;
                 const today = new Date();
                 const maturity = new Date(maturityDate);
                 const months = (maturity.getFullYear() - today.getFullYear()) * 12 + maturity.getMonth() - today.getMonth();
                 return months > 0 ? months : 1;
+            }
+        },
+        termInMonths: {
+            description: "Return a financial instruments Contractual Term in months",
+            implementation: function(term, termCode) {
+                if (term) {
+                    if (termCode == 'D') {
+                        return parseInt(term / 30);
+                    } else {
+                        return parseInt(term);
+                    }
+                } else {
+                    return false;
+                }
             }
         },
         lifeInMonths: {
@@ -166,13 +180,31 @@ const financial = {
             }
         },
         ddaExpense: {
-            description: "Calculates maintenance expense of checking / demand deposit accounts based on type-indentifier",
+            description: "Calculates annual maintenance expense of a checking account based on type-indentifier",
             implementation: function(type) {
                 const identifiedType = libraries.functions.identifyType(type, libraries.dictionaries.ddaTypeID.values);
                 if (identifiedType !== null) {
                     return libraries.dictionaries.ddaAnnualExpense.values[identifiedType].toFixed(2);
                 } else {
                     console.error(`type not found for libraries.dictionaries.ddaOpenExpense.values:${type}.`);
+                }
+            } 
+        },
+        CDExpense: {
+            description: "Calculates annual maintenance and opening expense of certificates of deposit accounts based on type-indentifier",
+            implementation: function(type, term) {
+                const identifiedType = libraries.functions.identifyType(type, libraries.dictionaries.CDtypeIRA.values);
+                if (identifiedType !== null) {
+                    const annualExpense = libraries.dictionaries.CDAnnualExpense.values[identifiedType];
+                    let openExpense = 0;
+                    if (term) {
+                        openExpense = libraries.dictionaries.CDOpenExpense.values[identifiedType] / term * 12;
+                    } else {
+                        console.log('term missing, omitted openExpense');
+                    }
+                    return (annualExpense + openExpense).toFixed(2);
+                } else {
+                    console.error(`type not found for libraries.dictionaries.CDtypeIRA.values:${type}.`);
                 }
             } 
         },
@@ -325,6 +357,20 @@ const financial = {
                 "Commercial": 145
             }
         },
+        CDAnnualExpense: {
+            description: "Certificate of Deposit annual operating costs",
+            values: {
+                "nonIRA": 31, 
+                "IRA": 70
+            }
+        },
+        CDOpenExpense: {
+            description: "Certificate of Deposit opening costs",
+            values: {
+                "nonIRA": 10,
+                "IRA": 25
+            }
+        }
     }
 }
 window.financial = financial; // Make it globally accessible
