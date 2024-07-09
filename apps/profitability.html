@@ -74,7 +74,12 @@
                     id: 'savings',
                     formula: '(charges - interestExpense - (deposits / lifeInMonths * depositUnitCost / 2) + (withdrawals / lifeInMonths * withdrawalUnitCost) * 12 + balance * marginTarget - fraudLoss - savingsAnnualExpense) * (1-taxRate)',
                     pipeIDs: ['sav']
-                }
+                },
+                {
+					id: 'certificate',
+					formula: '((trates: termInMonths - rate) * balance - CDExpense) * (1-taxRate)',
+					pipeIDs: ['certificate', 'certificate', 'CD', 'COD']
+				}
             ]
         };
     </script>
