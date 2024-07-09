@@ -40,13 +40,24 @@ const translations = {
             "Number_of_Debits": "withdrawals",
             "Branch_Number": "branch",
             "Opened_by_Resp_Code": "responsibility"
+        },
+	certificate: {
+            "Portfolio": "ID",
+            "Class_Code": "type",
+            "Date_Opened": "openDate",
+            "Current_Balance": "balance",
+            "Interest_Rate": "rate",
+            "Term": "term",
+            "Term_Code": "termCode",
+            "Branch_Number": "branch",
+            "Opened_by_Resp_Code": "responsibility"
         }
     },
     responsibility: {
         "100": "Jim",
-		"200": "Tonya",
+	"200": "Tonya",
         "300": "Angela",
-		"400": "Bob"
+	"400": "Bob"
     },
     branch: {
         "1": "Branch One"
