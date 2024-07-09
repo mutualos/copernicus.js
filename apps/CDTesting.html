@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDTesting</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="spinnerOverlay" class="spinner-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div id="chartContainer"></div>
+    <div id="resultsTableContainer" class="table-container"></div>
+    <!-- Modal -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="../JS_box.png" alt="Logo">
+                <h2 id="modalTitle"></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvPipe" accept=".csv" multiple>
+                    <span id="fileNames" class="file-names">No file chosen</span>
+                </div>
+                <button id="run">
+                    Run
+                </button>
+                <h5>Version <span id="modalVersion"></span></h5>
+                <h4>Components</h4>
+                <ul class="component-list" id="componentList"></ul>
+            </div>
+        </div>
+    </div>
+    <footer class="fixed-footer"></footer>
+    <script>
+        window.buildConfig = {
+            libraries: [
+                'financial',
+                'organization',
+				'https://bankersiq.com/api/trates/'
+
+            ],
+            version: '',
+            title: 'CDTesting',
+            description: '',
+            author: '',
+            presentation: {
+                columns: [
+                    { header: 'ID', key: 'ID', type: 'integer' },
+					{ header: 'Result', key: 'result', type: 'float' }
+				],
+				primary_key: 'ID',
+				sort: { key: 'result', order: 'desc' },
+				charts: [
+					
+				],
+            },
+            components: [
+				{
+					id: 'certificate',
+					formula: '((trates: termInMonths - rate) * balance - CDExpense) * (1-taxRate)',
+					pipeIDs: ['certificate', 'certificate', 'CD', 'COD']
+				}
+			]
+        };
+    </script>
+    <script src="../core/modal.js"></script>
+    <script src="../core/loadLibraries.js"></script>
+    <script src="../organization/translator.js"></script>
+    <script src="../core/main.js"></script>
+</body>
+</html>
