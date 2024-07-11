@@ -269,7 +269,7 @@ function displayResults(results) {
                         if (isNaN(value)) value = 0;
                         break;
                     case 'float':
-                        value = parseFloat(value).toFixed(2);
+                        value = parseFloat(value).toFixed(3);
                         if (isNaN(value)) value = '0.00';
                         break;
                     case 'currency':
