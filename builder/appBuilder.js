@@ -173,7 +173,7 @@ function updatePipeSuggestionBox(pipeItems, filter) {
             item.className = `suggestion-item pipe`;
             item.innerText = suggestion;
             item.addEventListener('click', () => {
-                insertSuggestion(document.getElementById('editor'), suggestion, 'pipe');
+                insertSuggestionAndCategory(document.getElementById('editor'), suggestion, pipe.category);
             });
             categoryContainer.appendChild(item);
         });
@@ -181,7 +181,40 @@ function updatePipeSuggestionBox(pipeItems, filter) {
     });
 }
 
+function insertSuggestionAndCategory(editor, suggestion, category) {
+    if (!editor) return;
+
+    // Insert the pipe suggestion first
+    insertSuggestion(editor, suggestion, 'pipe');
+
+    // Get the updated text
+    const text = editor.innerText;
+    const lastSemicolonIndex = text.lastIndexOf(';');
+    const categoryWithPipes = `|${category}|`;
+
+    // Check if the category already exists in the text
+    if (text.includes(categoryWithPipes)) {
+        return;
+    }
+
+    let updatedText;
+    if (lastSemicolonIndex === -1) {
+        updatedText = `${categoryWithPipes} ${text}`;
+    } else {
+        updatedText = `${text.slice(0, lastSemicolonIndex + 1)} ${categoryWithPipes} ${text.slice(lastSemicolonIndex + 1)}`;
+    }
+
+    editor.innerText = updatedText;
+
+    // Reapply syntax highlighting
+    const highlightedText = highlightSyntax(updatedText);
+    editor.innerHTML = highlightedText;
+    placeCaretAtEnd(editor);
+}
+
 function insertSuggestion(editor, suggestion, type) {
+    if (!editor) return;
+
     const text = editor.innerText;
     const words = text.split(/\s+/);
 
