@@ -11,7 +11,14 @@ document.getElementById('saveButton').addEventListener('click', function() {
     // Function to identify pipe used in the formula
     function identifyPipe(formula) {
         const pipeCount = new Map();
+        let accurateCategory = null;
+
         pipeItems.forEach(pipe => {
+            // Check if the pipe category surrounded by | symbols is found
+            if (formula.includes(`|${pipe.category}|`)) {
+                accurateCategory = pipe.category;
+            }
+
             pipe.items.forEach(item => {
                 if (formula.includes(item)) {
                     const count = pipeCount.get(pipe.category) || 0;
@@ -19,7 +26,13 @@ document.getElementById('saveButton').addEventListener('click', function() {
                 }
             });
         });
-    
+
+        // If an accurate category is found, return it immediately
+        if (accurateCategory) {
+            console.log('accurateCategory: ', accurateCategory)
+            return accurateCategory;
+        }
+
         let mostFrequentCategory = null;
         let maxCount = 0;
         pipeCount.forEach((count, category) => {
@@ -28,10 +41,9 @@ document.getElementById('saveButton').addEventListener('click', function() {
                 maxCount = count;
             }
         });
-    
+
         return mostFrequentCategory;
     }
-
 
     // Create a mapping of functions, attributes, and dictionaries to their respective libraries
     const libraryMapping = {
@@ -162,14 +174,21 @@ document.getElementById('saveButton').addEventListener('click', function() {
         return `columns: [\n${columnsString}\n\t\t\t\t],\n\t\t\t\tprimary_key: '${primaryKey}',\n\t\t\t\tsort: { key: '${sortKey}', order: '${sortOrder}' },\n\t\t\t\tcharts: [\n\t\t\t\t\t${chartsString}\n\t\t\t\t]`;
     }
 
+    // Function to clean the formula by removing pipe categories and extra spaces
+    function cleanFormula(formula) {
+        // Remove pipe categories surrounded by | symbols and extra spaces
+        return formula.replace(/\|\w+\|\s*/g, '').replace(/\s+/g, ' ').trim();
+    }
+
     // Create components based on the formulas
     const components = formulas.map((formula, index) => {
         const associatedPipe = identifyPipe(formula);
+        const cleanedFormula = cleanFormula(formula);
         console.log('associatedPipe', index, associatedPipe);
         //let componentId = `component_${index}`;
         return {
             id: associatedPipe,
-            formula: formula,
+            formula: cleanedFormula,
             pipeIDs: populatePipeIDs(associatedPipe) 
         };
     });
