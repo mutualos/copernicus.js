@@ -67,7 +67,7 @@
                 },
                 {
                     id: 'checking',
-                    formula: '((chargesIncome - interestExpense - deposits * depositUnitCost) * 12 + balance * (1 - ddaReserveRequired) * marginTarget - fraudLoss - ddaAnnualExpense) * (1-taxRate)',
+                    formula: '((chargesIncome - interestExpense - deposits * depositUnitCost) * 12 + balance * (1 - ddaReserveRequired) * marginTarget - fraudLoss - ddaExpense) * (1-taxRate)',
                     pipeIDs: ['check', 'dda']
                 },
                 {
@@ -76,10 +76,10 @@
                     pipeIDs: ['sav']
                 },
                 {
-					id: 'certificate',
-					formula: '((trates: termInMonths - rate) * balance - CDExpense) * (1-taxRate)',
-					pipeIDs: ['certificate', 'certificate', 'CD', 'COD']
-				}
+		    id: 'certificate',
+		    formula: '((trates: termInMonths - rate) * balance - CDExpense) * (1-taxRate)',
+		    pipeIDs: ['certificate', 'certificate', 'CD', 'COD']
+		}
             ]
         };
     </script>
